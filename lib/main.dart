@@ -4,12 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:radiology_and_lab_app/core/routers/app_router.dart';
 import 'package:radiology_and_lab_app/core/theme/app_theme.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:radiology_and_lab_app/firebase_options.dart';
 
-import 'core/constants/app_colors.dart';
-import 'features/splash/presentation/view/splash_view.dart';
-
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
