@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "132466130127",
+    "project_id": "radiology-and-lab-app",
+    "storage_bucket": "radiology-and-lab-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:132466130127:android:83b39ac6e8901413ce4bba",
+        "android_client_info": {
+          "package_name": "com.example.radiology_and_lab_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUKc8LXLp0Ntn9GCuj0dd_WZBarNVB40c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
