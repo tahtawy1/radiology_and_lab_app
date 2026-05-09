@@ -3,6 +3,10 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+<<<<<<< HEAD
+=======
+  cloud_firestore
+>>>>>>> auth_clean_architecture
   firebase_auth
   firebase_core
 )
