@@ -14,14 +14,28 @@ abstract final class AppColors {
   // ── Glassmorphism surfaces ─────────────────────────────────────────────────
   static const Color glassWhite10 = Color(0x1AFFFFFF); // rgba(255,255,255,0.10)
   static const Color glassWhite20 = Color(0x33FFFFFF); // rgba(255,255,255,0.20)
-  static const Color glassBorder = Color(0x33FFFFFF);  // rgba(255,255,255,0.20)
-  static const Color badgeBorder = Color(0x1AFFFFFF);  // rgba(255,255,255,0.10)
-  static const Color badgeText = Color(0xE6FFFFFF);    // rgba(255,255,255,0.90)
+  static const Color glassBorder = Color(0x33FFFFFF); // rgba(255,255,255,0.20)
+  static const Color badgeBorder = Color(0x1AFFFFFF); // rgba(255,255,255,0.10)
+  static const Color badgeText = Color(0xE6FFFFFF); // rgba(255,255,255,0.90)
 
   // ── Progress indicator ────────────────────────────────────────────────────
   static const Color progressActive = Color(0xFFFFFFFF);
-  static const Color progressInactive = Color(0x33FFFFFF); // rgba(255,255,255,0.20)
+  static const Color progressInactive = Color(
+    0x33FFFFFF,
+  ); // rgba(255,255,255,0.20)
 
   // ── Decorative blobs ──────────────────────────────────────────────────────
   static const Color blobColor = Color(0x1AFFFFFF); // rgba(255,255,255,0.10)
+
+  // ── Auth UI Colors ────────────────────────────────────────────────────────
+  static const Color primaryDark = Color(0xFF0F766E);
+  static const Color primaryLight = Color(0xFF14B8A6);
+  static const Color errorRed = Color(0xFFEF4444);
+  static const Color errorBackground = Color(0xFFFEE2E2);
+  static const Color successGreen = Color(0xFF10B981);
+  static const Color textPrimary = Color(0xFF1F2937);
+  static const Color textSecondary = Color(0xFF6B7280);
+  static const Color inputBorder = Color(0xFFE5E7EB);
+  static const Color surfaceWhite = Color(0xFFFFFFFF);
+  static const Color backgroundLight = Color(0xFFF9FAFB);
 }
