@@ -2,32 +2,23 @@ import 'package:device_preview/device_preview.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:radiology_and_lab_app/core/routers/app_router.dart';
-import 'package:radiology_and_lab_app/core/theme/app_theme.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:radiology_and_lab_app/firebase_options.dart';
-import 'package:radiology_and_lab_app/core/di/injection_container.dart';
+import 'package:radiology_and_lab_app/core/router/app_router.dart';
 
-void main() async {
+import 'core/constants/app_colors.dart';
+
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await initGetIt();
 
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-    ),
-  );
-
   runApp(
-    DevicePreview(enabled: !kReleaseMode, builder: (context) => RadiologyApp()),
+    DevicePreview(
+      enabled: !kReleaseMode,
+      builder: (context) => const RadiologyApp(),
+    ),
   );
 }
 
@@ -40,7 +31,14 @@ class RadiologyApp extends StatelessWidget {
       routerConfig: appRouter,
       title: 'Radiology & Lab System',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
+        scaffoldBackgroundColor: AppColors.scaffoldBg,
+        splashColor: AppColors.primary.withValues(alpha: 0.1),
+        highlightColor: Colors.transparent,
+        fontFamily: 'Poppins',
+      ),
     );
   }
 }

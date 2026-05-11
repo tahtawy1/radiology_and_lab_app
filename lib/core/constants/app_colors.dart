@@ -1,41 +1,63 @@
-import 'dart:ui';
+import 'package:flutter/material.dart';
 
-/// All colour tokens extracted directly from the Figma Splash Screen frame.
+/// Design tokens extracted from the patient Home View design.
 abstract final class AppColors {
-  // ── Background gradient stops ──────────────────────────────────────────────
-  static const Color gradientTop = Color(0xFF0F766E);
-  static const Color gradientMid = Color(0xFF14B8A6);
-  static const Color gradientBottom = Color(0xFF0D5F58);
+  // ── Brand / Primary ───────────────────────────────────────────────────────
+  static const Color primary = Color(0xFF0F766E);
+  static const Color primaryLight = Color(0xFF14B8A6);
+  static const Color primarySubtle = Color(0xFF00BBA7);
+
+  // ── Appointment card ──────────────────────────────────────────────────────
+  static const Color apptCardBg = Color(0xFF0F6B60);      // deep teal card
+  static const Color apptCardDark = Color(0xFF0A4F47);    // darker accent strip
+  static const Color apptConfirmedBadge = Color(0xFF4ECDC4); // light teal badge
+
+  // ── Live queue banner ─────────────────────────────────────────────────────
+  static const Color queueBannerBg = Color(0xFFFFFBEB);   // warm cream
+  static const Color queueBannerBorder = Color(0xFFFDE68A); // amber border
+  static const Color queueLiveGreen = Color(0xFF22C55E);  // pulsing live dot
+
+  // ── Background ────────────────────────────────────────────────────────────
+  static const Color scaffoldBg = Color(0xFFF8FAFC);
+  static const Color cardBg = Color(0xFFFFFFFF);
+  static const Color cardBorder = Color(0xFFF1F5F9);
+  static const Color sectionHeaderBg = Color(0x80F8FAFC);
+  static const Color chipBg = Color(0xFFF1F5F9);
 
   // ── Text ──────────────────────────────────────────────────────────────────
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color subtitleTeal = Color(0xFFCBFBF1); // #cbfbf1
+  static const Color textDark = Color(0xFF1D293D);
+  static const Color textDark2 = Color(0xFF0F172B);
+  static const Color textMedium = Color(0xFF45556C);
+  static const Color textGray = Color(0xFF62748E);
+  static const Color textMuted = Color(0xFF90A1B9);
+  static const Color textSubheading = Color(0xFF314158);
+  static const Color textWhite = Color(0xFFFFFFFF);
+  static const Color headerSubtitle = Color(0xFFCBFBF1);
 
-  // ── Glassmorphism surfaces ─────────────────────────────────────────────────
-  static const Color glassWhite10 = Color(0x1AFFFFFF); // rgba(255,255,255,0.10)
-  static const Color glassWhite20 = Color(0x33FFFFFF); // rgba(255,255,255,0.20)
-  static const Color glassBorder = Color(0x33FFFFFF); // rgba(255,255,255,0.20)
-  static const Color badgeBorder = Color(0x1AFFFFFF); // rgba(255,255,255,0.10)
-  static const Color badgeText = Color(0xE6FFFFFF); // rgba(255,255,255,0.90)
+  // ── Status / Semantic ─────────────────────────────────────────────────────
+  static const Color success = Color(0xFF00C950);
+  static const Color danger = Color(0xFFFB2C36);
+  static const Color dangerDark = Color(0xFFE7000B);
+  static const Color warning = Color(0xFFF54900);
+  static const Color warningBar = Color(0xFFFF6900);
+  static const Color progressBlue = Color(0xFF2B7FFF);
 
-  // ── Progress indicator ────────────────────────────────────────────────────
-  static const Color progressActive = Color(0xFFFFFFFF);
-  static const Color progressInactive = Color(
-    0x33FFFFFF,
-  ); // rgba(255,255,255,0.20)
+  // ── Icon chip backgrounds ─────────────────────────────────────────────────
+  static const Color chipBlue = Color(0xFFEFF6FF);
+  static const Color chipOrange = Color(0xFFFFF7ED);
+  static const Color chipGreen = Color(0xFFF0FDF4);
+  static const Color chipPurple = Color(0xFFFAF5FF);
+  static const Color chipTeal = Color(0xFFF0FDFA);
 
-  // ── Decorative blobs ──────────────────────────────────────────────────────
-  static const Color blobColor = Color(0x1AFFFFFF); // rgba(255,255,255,0.10)
+  // ── Icon colors inside chips ──────────────────────────────────────────────
+  static const Color chipPurpleIcon = Color(0xFF9333EA);
+  static const Color chipOrangeIcon = Color(0xFFF59E0B);
 
-  // ── Auth UI Colors ────────────────────────────────────────────────────────
-  static const Color primaryDark = Color(0xFF0F766E);
-  static const Color primaryLight = Color(0xFF14B8A6);
-  static const Color errorRed = Color(0xFFEF4444);
-  static const Color errorBackground = Color(0xFFFEE2E2);
-  static const Color successGreen = Color(0xFF10B981);
-  static const Color textPrimary = Color(0xFF1F2937);
-  static const Color textSecondary = Color(0xFF6B7280);
-  static const Color inputBorder = Color(0xFFE5E7EB);
-  static const Color surfaceWhite = Color(0xFFFFFFFF);
-  static const Color backgroundLight = Color(0xFFF9FAFB);
+  // ── Glassmorphism ─────────────────────────────────────────────────────────
+  static const Color glassWhite20 = Color(0x33FFFFFF);
+  static const Color glassWhiteBorder = Color(0x33FFFFFF);
+
+  // ── Nav bar ───────────────────────────────────────────────────────────────
+  static const Color navActive = Color(0xFF0F766E);
+  static const Color navInactive = Color(0xFF90A1B9);
 }
