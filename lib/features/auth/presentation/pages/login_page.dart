@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -35,7 +36,7 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _login() {
+  void _login() async {
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AuthCubit>().signIn(
         _emailController.text.trim(),
@@ -61,7 +62,7 @@ class _LoginPageState extends State<LoginPage> {
             if (role == 'admin') {
               context.go('/admin_home');
             } else if (role == 'doctor') {
-              context.go('/doctor_home');
+              context.go(AppStrings.bookAppointmentRoute);
             } else {
               context.go('/patient_home');
             }

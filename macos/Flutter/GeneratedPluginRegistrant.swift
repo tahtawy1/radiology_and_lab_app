@@ -5,19 +5,13 @@
 import FlutterMacOS
 import Foundation
 
-<<<<<<< HEAD
-=======
 import cloud_firestore
->>>>>>> auth_clean_architecture
 import firebase_auth
 import firebase_core
 import shared_preferences_foundation
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
-<<<<<<< HEAD
-=======
   FLTFirebaseFirestorePlugin.register(with: registry.registrar(forPlugin: "FLTFirebaseFirestorePlugin"))
->>>>>>> auth_clean_architecture
   FLTFirebaseAuthPlugin.register(with: registry.registrar(forPlugin: "FLTFirebaseAuthPlugin"))
   FLTFirebaseCorePlugin.register(with: registry.registrar(forPlugin: "FLTFirebaseCorePlugin"))
   SharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "SharedPreferencesPlugin"))
