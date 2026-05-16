@@ -1,7 +1,6 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:radiology_and_lab_app/core/services/user_session_service.dart';
 
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/firebase_error_mapper.dart';
@@ -67,19 +66,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final user = UserModel.fromJson(doc.data()!);
 
       // Role validation
-      if (user.role != selectedRole.toLowerCase()) {
+      if (user.role.toLowerCase() != selectedRole.toLowerCase()) {
         await firebaseAuth.signOut();
 
         throw const AuthException('Selected role does not match your account');
       }
-
+      UserSessionService.currentUser = user;
       return user;
     } on FirebaseAuthException catch (e) {
       throw AuthException(FirebaseErrorMapper.getMessage(e));
     } on FirebaseException catch (e) {
       throw ServerException(e.message ?? 'Database error occurred');
     } catch (e) {
-      log(e.toString());
       throw const ServerException('Something went wrong');
     }
   }
@@ -161,6 +159,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> signOut() async {
     try {
+      UserSessionService.currentUser = null;
       await firebaseAuth.signOut();
     } on FirebaseAuthException catch (e) {
       throw AuthException(FirebaseErrorMapper.getMessage(e));

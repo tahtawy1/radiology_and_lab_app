@@ -200,6 +200,7 @@ class QueueRemoteDataSourceImpl implements QueueRemoteDataSource {
       await firestore.collection('appointments').doc(appointmentId).update({
         'queueStatus': 'served',
         'servedAt': FieldValue.serverTimestamp(),
+        'resultUploaded': false,
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } on FirebaseException catch (e) {

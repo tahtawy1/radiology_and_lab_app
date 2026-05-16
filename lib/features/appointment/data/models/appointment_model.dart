@@ -24,6 +24,7 @@ class AppointmentModel extends AppointmentEntity {
     super.createdByType = 'patient_direct',
     required super.createdAt,
     required super.updatedAt,
+    super.resultUploaded = false,
   });
 
   // ── Factory: from Entity ──────────────────────────────────────────────────
@@ -48,6 +49,7 @@ class AppointmentModel extends AppointmentEntity {
       createdByType: entity.createdByType,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
+      resultUploaded: entity.resultUploaded,
     );
   }
 
@@ -88,6 +90,7 @@ class AppointmentModel extends AppointmentEntity {
           map['updatedAt'] != null
               ? (map['updatedAt'] as Timestamp).toDate()
               : DateTime.now(),
+      resultUploaded: map['resultUploaded'] ?? false,
     );
   }
 
@@ -114,6 +117,7 @@ class AppointmentModel extends AppointmentEntity {
       'createdByType': createdByType,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
+      'resultUploaded': resultUploaded,
     };
   }
 
@@ -138,6 +142,7 @@ class AppointmentModel extends AppointmentEntity {
     String? createdByType,
     DateTime? createdAt,
     DateTime? updatedAt,
+    bool? resultUploaded,
   }) {
     return AppointmentModel(
       id: id ?? this.id,
@@ -159,6 +164,7 @@ class AppointmentModel extends AppointmentEntity {
       createdByType: createdByType ?? this.createdByType,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      resultUploaded: resultUploaded ?? this.resultUploaded,
     );
   }
 }

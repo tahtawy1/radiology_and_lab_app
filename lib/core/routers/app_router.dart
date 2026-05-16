@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:radiology_and_lab_app/core/constants/app_strings.dart';
@@ -19,6 +20,13 @@ import 'package:radiology_and_lab_app/features/queue/presentation/pages/admin/qu
 import 'package:radiology_and_lab_app/features/queue/presentation/cubit/queue_admin_cubit.dart';
 import 'package:radiology_and_lab_app/features/queue/presentation/pages/patient/queue_patient_screen.dart';
 import 'package:radiology_and_lab_app/features/queue/presentation/cubit/queue_patient_cubit.dart';
+import 'package:radiology_and_lab_app/features/results/presentation/cubit/results_cubit.dart';
+import 'package:radiology_and_lab_app/features/results/presentation/pages/admin/upload_result_screen.dart';
+import 'package:radiology_and_lab_app/features/results/presentation/pages/admin/served_patients_results_screen.dart';
+import 'package:radiology_and_lab_app/features/results/presentation/pages/patient/patient_results_screen.dart';
+import 'package:radiology_and_lab_app/features/results/presentation/pages/doctor/review_result_screen.dart';
+import 'package:radiology_and_lab_app/features/results/domain/entites/result_entity.dart';
+import 'package:radiology_and_lab_app/features/results/presentation/pages/doctor/doctor_pending_reviews_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: AppStrings.loginRoute,
@@ -102,6 +110,69 @@ final GoRouter appRouter = GoRouter(
           (_, _) => BlocProvider<QueuePatientCubit>(
             create: (context) => getIt<QueuePatientCubit>(),
             child: const QueuePatientView(),
+          ),
+    ),
+
+    // Results Feature Routes
+    GoRoute(
+      path: AppStrings.uploadResultRoute,
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+
+        if (extra == null) {
+          return const Scaffold(
+            body: Center(child: Text('No upload data found')),
+          );
+        }
+
+        return BlocProvider<ResultsCubit>(
+          create: (context) => getIt<ResultsCubit>(),
+          child: UploadResultScreen(
+            appointmentId: extra['appointmentId'],
+            patientName: extra['patientName'],
+            testType: extra['testType'],
+          ),
+        );
+      },
+    ),
+
+    GoRoute(
+      path: AppStrings.servedPatientsResultsRoute,
+      builder:
+          (_, _) => BlocProvider<ResultsCubit>(
+            create: (context) => getIt<ResultsCubit>(),
+            child: const ServedPatientsResultsScreen(),
+          ),
+    ),
+
+    GoRoute(
+      path: AppStrings.patientResultsRoute,
+      builder:
+          (_, _) => BlocProvider<ResultsCubit>(
+            create: (context) => getIt<ResultsCubit>(),
+            child: const PatientResultsScreen(),
+          ),
+    ),
+    GoRoute(
+      path: AppStrings.reviewResultRoute,
+      builder: (context, state) {
+        final result = state.extra;
+
+        if (result == null || result is! ResultEntity) {
+          return const Scaffold(body: Center(child: Text('Result not found')));
+        }
+        return BlocProvider<ResultsCubit>(
+          create: (context) => getIt<ResultsCubit>(),
+          child: ReviewResultScreen(result: result),
+        );
+      },
+    ),
+    GoRoute(
+      path: AppStrings.doctorPendingReviewsRoute,
+      builder:
+          (_, _) => BlocProvider<ResultsCubit>(
+            create: (context) => getIt<ResultsCubit>(),
+            child: const DoctorPendingReviewsScreen(),
           ),
     ),
   ],

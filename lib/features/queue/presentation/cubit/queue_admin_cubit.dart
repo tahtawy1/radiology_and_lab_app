@@ -23,6 +23,7 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
     required this.markQueueNoShowUseCase,
   }) : super(QueueAdminInitial());
 
+  // ── Failure mapper ─────────────────────────────────────────────────────────
   Failure _mapExceptionToFailure(dynamic e) {
     if (e is ValidationException) return ValidationFailure(e.message);
     if (e is NetworkException) return NetworkFailure(e.message);
@@ -30,13 +31,16 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
     return ServerFailure(e.toString());
   }
 
+  // ── Fetch Queue ────────────────────────────────────────────────────────────
   Future<void> fetchQueue({required String department}) async {
     emit(QueueAdminLoading());
     try {
       final entries = await getTodayQueueUseCase(department: department);
       final totalToday = entries.length;
-      final called = entries.where((e) => e.queueStatus?.name == 'called').length;
-      final served = entries.where((e) => e.queueStatus?.name == 'served').length;
+      final called =
+          entries.where((e) => e.queueStatus?.name == 'called').length;
+      final served =
+          entries.where((e) => e.queueStatus?.name == 'served').length;
 
       emit(QueueAdminLoaded(
         queueEntries: entries,
@@ -49,9 +53,16 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
     }
   }
 
-  Future<void> checkInPatient({required String appointmentId, required String department}) async {
+  // ── Check In Patient ───────────────────────────────────────────────────────
+  Future<void> checkInPatient({
+    required String appointmentId,
+    required String department,
+  }) async {
     try {
-      await checkInPatientUseCase(appointmentId: appointmentId, department: department);
+      await checkInPatientUseCase(
+        appointmentId: appointmentId,
+        department: department,
+      );
       emit(QueueAdminActionSuccess('Patient checked in successfully'));
       await fetchQueue(department: department);
     } catch (e) {
@@ -59,6 +70,7 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
     }
   }
 
+  // ── Call Next Patient ──────────────────────────────────────────────────────
   Future<void> callNextPatient({required String department}) async {
     try {
       await callNextPatientUseCase(department: department);
@@ -69,7 +81,11 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
     }
   }
 
-  Future<void> markServed({required String appointmentId, required String department}) async {
+  // ── Mark Served ────────────────────────────────────────────────────────────
+  Future<void> markServed({
+    required String appointmentId,
+    required String department,
+  }) async {
     try {
       await markQueueServedUseCase(appointmentId: appointmentId);
       emit(QueueAdminActionSuccess('Patient marked as served'));
@@ -79,7 +95,11 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
     }
   }
 
-  Future<void> markNoShow({required String appointmentId, required String department}) async {
+  // ── Mark No Show ───────────────────────────────────────────────────────────
+  Future<void> markNoShow({
+    required String appointmentId,
+    required String department,
+  }) async {
     try {
       await markQueueNoShowUseCase(appointmentId: appointmentId);
       emit(QueueAdminActionSuccess('Patient marked as no-show'));

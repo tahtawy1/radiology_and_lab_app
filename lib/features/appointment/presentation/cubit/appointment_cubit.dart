@@ -22,7 +22,8 @@ class AppointmentCubit extends Cubit<AppointmentState> {
   final UpdateAppointmentStatusUseCase updateAppointmentStatusUseCase;
   final UpdateQueueStatusUseCase updateQueueStatusUseCase;
   final GetDoctorsUseCase getDoctorsUseCase;
-  final GetPendingAppointmentsForDoctorUseCase getPendingAppointmentsForDoctorUseCase;
+  final GetPendingAppointmentsForDoctorUseCase
+  getPendingAppointmentsForDoctorUseCase;
 
   AppointmentCubit({
     required this.bookAppointmentUseCase,
@@ -69,7 +70,9 @@ class AppointmentCubit extends Cubit<AppointmentState> {
   Future<void> getPendingAppointmentsForDoctor(String doctorId) async {
     emit(AppointmentLoading());
     try {
-      final appointments = await getPendingAppointmentsForDoctorUseCase(doctorId);
+      final appointments = await getPendingAppointmentsForDoctorUseCase(
+        doctorId,
+      );
       emit(AppointmentsLoaded(appointments: appointments));
     } catch (e) {
       emit(AppointmentError(_mapExceptionToFailure(e).message));
@@ -165,7 +168,9 @@ class AppointmentCubit extends Cubit<AppointmentState> {
         appointmentId: appointmentId,
         status: status,
       );
-      emit(AppointmentStatusUpdatedSuccess()); // Reuse same success state for simplicity
+      emit(
+        AppointmentStatusUpdatedSuccess(),
+      ); // Reuse same success state for simplicity
     } catch (e) {
       emit(AppointmentError(_mapExceptionToFailure(e).message));
     }

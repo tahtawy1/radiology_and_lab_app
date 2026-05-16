@@ -31,7 +31,6 @@ import '../../features/queue/domain/usecases/mark_queue_served_usecase.dart';
 import '../../features/queue/domain/usecases/mark_queue_no_show_usecase.dart';
 import '../../features/queue/domain/usecases/get_patients_ahead_usecase.dart';
 import '../../features/queue/presentation/cubit/queue_admin_cubit.dart';
-
 import '../../features/queue/presentation/cubit/queue_patient_cubit.dart';
 
 // Auth Feature
@@ -44,6 +43,19 @@ import '../../features/auth/domain/usecases/sign_out_usecase.dart';
 import '../../features/auth/domain/usecases/sign_up_usecase.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
 
+// Results Feature
+import '../../features/results/data/datasource/result_remote_datasource.dart';
+import '../../features/results/data/repositories/results_repositories_impl.dart';
+import '../../features/results/domain/repositories/results_repositories.dart';
+import '../../features/results/domain/usecases/upload_result_usecase.dart';
+import '../../features/results/domain/usecases/review_result_usecase.dart';
+import '../../features/results/domain/usecases/get_patient_results_usecase.dart';
+import '../../features/results/domain/usecases/get_doctor_pending_reviews_usecase.dart';
+import '../../features/results/domain/usecases/get_served_patients_usecase.dart';
+import '../../features/results/presentation/cubit/results_cubit.dart';
+import 'package:dio/dio.dart';
+import '../../core/services/cloudinary_service.dart';
+
 final getIt = GetIt.instance;
 
 Future<void> initGetIt() async {
@@ -54,6 +66,8 @@ Future<void> initGetIt() async {
   getIt.registerLazySingleton<FirebaseFirestore>(
     () => FirebaseFirestore.instance,
   );
+  getIt.registerLazySingleton<Dio>(() => Dio());
+  getIt.registerLazySingleton<CloudinaryService>(() => CloudinaryService());
 
   // ---------------------------------------------------------------------------
   // Auth Feature
@@ -84,6 +98,38 @@ Future<void> initGetIt() async {
   );
 
   // ---------------------------------------------------------------------------
+  // Results Feature
+  // ---------------------------------------------------------------------------
+  // Data Sources
+  getIt.registerLazySingleton<ResultRemoteDataSource>(
+    () => ResultRemoteDataSourceImpl(getIt()),
+  );
+
+  // Repositories
+  getIt.registerLazySingleton<ResultsRepository>(
+    () => ResultsRepositoryImpl(remoteDataSource: getIt()),
+  );
+
+  // Use Cases
+  getIt.registerLazySingleton(() => UploadResultUseCase(getIt()));
+  getIt.registerLazySingleton(() => ReviewResultUseCase(getIt()));
+  getIt.registerLazySingleton(() => GetPatientResultsUseCase(getIt()));
+  getIt.registerLazySingleton(() => GetDoctorPendingReviewsUseCase(getIt()));
+  getIt.registerLazySingleton(() => GetServedPatientsUseCase(getIt()));
+
+  // Cubits
+  getIt.registerFactory(
+    () => ResultsCubit(
+      uploadResultUseCase: getIt(),
+      reviewResultUseCase: getIt(),
+      getPatientResultsUseCase: getIt(),
+      getDoctorPendingReviewsUseCase: getIt(),
+      getServedPatientsUseCase: getIt(),
+      cloudinaryService: getIt(),
+    ),
+  );
+
+  // ---------------------------------------------------------------------------
   // Splash Feature
   // ---------------------------------------------------------------------------
   // Cubits
@@ -103,14 +149,28 @@ Future<void> initGetIt() async {
   );
 
   // Use Cases
-  getIt.registerLazySingleton(() => BookAppointmentUseCase(repository: getIt()));
-  getIt.registerLazySingleton(() => CancelAppointmentUseCase(repository: getIt()));
-  getIt.registerLazySingleton(() => GetAllAppointmentsUseCase(repository: getIt()));
-  getIt.registerLazySingleton(() => GetPatientAppointmentsUseCase(repository: getIt()));
-  getIt.registerLazySingleton(() => UpdateAppointmentStatusUseCase(repository: getIt()));
-  getIt.registerLazySingleton(() => UpdateQueueStatusUseCase(repository: getIt()));
+  getIt.registerLazySingleton(
+    () => BookAppointmentUseCase(repository: getIt()),
+  );
+  getIt.registerLazySingleton(
+    () => CancelAppointmentUseCase(repository: getIt()),
+  );
+  getIt.registerLazySingleton(
+    () => GetAllAppointmentsUseCase(repository: getIt()),
+  );
+  getIt.registerLazySingleton(
+    () => GetPatientAppointmentsUseCase(repository: getIt()),
+  );
+  getIt.registerLazySingleton(
+    () => UpdateAppointmentStatusUseCase(repository: getIt()),
+  );
+  getIt.registerLazySingleton(
+    () => UpdateQueueStatusUseCase(repository: getIt()),
+  );
   getIt.registerLazySingleton(() => GetDoctorsUseCase(repository: getIt()));
-  getIt.registerLazySingleton(() => GetPendingAppointmentsForDoctorUseCase(repository: getIt()));
+  getIt.registerLazySingleton(
+    () => GetPendingAppointmentsForDoctorUseCase(repository: getIt()),
+  );
 
   // Cubits
   getIt.registerFactory(
@@ -141,13 +201,22 @@ Future<void> initGetIt() async {
 
   // Use Cases
   getIt.registerLazySingleton(() => GetTodayQueueUseCase(repository: getIt()));
-  getIt.registerLazySingleton(() => WatchPatientQueueEntryUseCase(repository: getIt()));
+  getIt.registerLazySingleton(
+    () => WatchPatientQueueEntryUseCase(repository: getIt()),
+  );
   getIt.registerLazySingleton(() => CheckInPatientUseCase(repository: getIt()));
-  getIt.registerLazySingleton(() => CallNextPatientUseCase(repository: getIt()));
-  getIt.registerLazySingleton(() => MarkQueueServedUseCase(repository: getIt()));
-  getIt.registerLazySingleton(() => MarkQueueNoShowUseCase(repository: getIt()));
-  getIt.registerLazySingleton(() => GetPatientsAheadUseCase(repository: getIt()));
-
+  getIt.registerLazySingleton(
+    () => CallNextPatientUseCase(repository: getIt()),
+  );
+  getIt.registerLazySingleton(
+    () => MarkQueueServedUseCase(repository: getIt()),
+  );
+  getIt.registerLazySingleton(
+    () => MarkQueueNoShowUseCase(repository: getIt()),
+  );
+  getIt.registerLazySingleton(
+    () => GetPatientsAheadUseCase(repository: getIt()),
+  );
 
   // Cubits
   getIt.registerFactory(
@@ -166,5 +235,4 @@ Future<void> initGetIt() async {
       getPatientsAheadUseCase: getIt(),
     ),
   );
-
 }

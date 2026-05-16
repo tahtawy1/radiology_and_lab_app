@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:radiology_and_lab_app/features/appointment/domain/entites/appointment_entity.dart';
 import 'package:radiology_and_lab_app/features/appointment/domain/entites/appointment_enums.dart';
 import 'package:radiology_and_lab_app/features/appointment/presentation/widgets/patint/appointment_status_badge.dart';
+import 'package:go_router/go_router.dart';
+import 'package:radiology_and_lab_app/core/constants/app_strings.dart';
 
 class AppointmentCard extends StatelessWidget {
   final AppointmentEntity appointment;
@@ -225,17 +227,64 @@ class AppointmentCard extends StatelessWidget {
                                   ),
                                 );
                               } else {
+                                // If served, show result status
+                                if (appointment.queueStatus == QueueStatus.served) {
+                                  if (appointment.resultUploaded) {
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.shade50,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: Colors.green.shade100),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.upload_file, size: 16, color: Colors.green.shade700),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Result Uploaded - Awaiting Review',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.green.shade700,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  } else {
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        color: Colors.orange.shade50,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: Colors.orange.shade100),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.science_outlined, size: 16, color: Colors.orange.shade700),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Patient Served - Processing Result',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.orange.shade700,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                }
+
                                 return SizedBox(
                                   width: double.infinity,
                                   child: ElevatedButton.icon(
                                     onPressed: () {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            'Navigating to Queue Status...',
-                                          ),
-                                        ),
-                                      );
+                                      context.push(AppStrings.queuePatientRoute);
                                     },
                                     icon: const Icon(Icons.queue, size: 18),
                                     label: const Text('View Queue'),
@@ -256,13 +305,7 @@ class AppointmentCard extends StatelessWidget {
                                 width: double.infinity,
                                 child: ElevatedButton.icon(
                                   onPressed: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Opening results flow...',
-                                        ),
-                                      ),
-                                    );
+                                    context.push(AppStrings.patientResultsRoute);
                                   },
                                   icon: const Icon(
                                     Icons.assignment_turned_in_outlined,

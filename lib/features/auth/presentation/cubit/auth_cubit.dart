@@ -20,6 +20,7 @@ class AuthCubit extends Cubit<AuthState> {
     required this.getCurrentUserUseCase,
   }) : super(AuthInitial());
 
+  // ── Failure mapper ─────────────────────────────────────────────────────────
   Failure _mapExceptionToFailure(dynamic e) {
     if (e is AuthException) {
       return AuthFailure(e.message);
@@ -33,6 +34,7 @@ class AuthCubit extends Cubit<AuthState> {
     return ServerFailure(e.toString());
   }
 
+  // ── Check Auth Status ──────────────────────────────────────────────────────
   Future<void> checkAuthStatus() async {
     emit(AuthLoading());
     try {
@@ -48,7 +50,12 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> signIn(String email, String password, String selectedRole) async {
+  // ── Sign In ────────────────────────────────────────────────────────────────
+  Future<void> signIn(
+    String email,
+    String password,
+    String selectedRole,
+  ) async {
     emit(AuthLoading());
     try {
       final user = await signInUseCase(email, password, selectedRole);
@@ -59,6 +66,7 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
+  // ── Sign Up ────────────────────────────────────────────────────────────────
   Future<void> signUp({
     required String fullName,
     required String nationalId,
@@ -82,6 +90,7 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
+  // ── Sign Out ───────────────────────────────────────────────────────────────
   Future<void> signOut() async {
     emit(AuthLoading());
     try {

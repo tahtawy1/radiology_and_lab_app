@@ -16,6 +16,7 @@ class QueuePatientCubit extends Cubit<QueuePatientState> {
     required this.getPatientsAheadUseCase,
   }) : super(QueuePatientInitial());
 
+  // ── Failure mapper ─────────────────────────────────────────────────────────
   Failure _mapExceptionToFailure(dynamic e) {
     if (e is ValidationException) return ValidationFailure(e.message);
     if (e is NetworkException) return NetworkFailure(e.message);
@@ -23,32 +24,33 @@ class QueuePatientCubit extends Cubit<QueuePatientState> {
     return ServerFailure(e.toString());
   }
 
+  // ── Watch Patient Queue ────────────────────────────────────────────────────
   void watchPatientQueue(String patientId) {
     emit(QueuePatientLoading());
     _queueSubscription?.cancel();
-    
-    _queueSubscription = watchPatientQueueEntryUseCase(patientId: patientId).listen(
-      (entry) async {
-        int ahead = 0;
-        try {
-          if (entry != null && 
-              entry.queueStatus?.name == 'waiting' && 
-              entry.queueNumber != null) {
-            
-            ahead = await getPatientsAheadUseCase(
-              queueNumber: entry.queueNumber!,
-              department: entry.department,
-            );
-          }
-          emit(QueuePatientLoaded(queueEntry: entry, patientsAhead: ahead));
-        } catch (e) {
-          emit(QueuePatientLoaded(queueEntry: entry, patientsAhead: 0));
-        }
-      },
-      onError: (e) {
-        emit(QueuePatientError(_mapExceptionToFailure(e).message));
-      },
-    );
+
+    _queueSubscription = watchPatientQueueEntryUseCase(patientId: patientId)
+        .listen(
+          (entry) async {
+            int ahead = 0;
+            try {
+              if (entry != null &&
+                  entry.queueStatus?.name == 'waiting' &&
+                  entry.queueNumber != null) {
+                ahead = await getPatientsAheadUseCase(
+                  queueNumber: entry.queueNumber!,
+                  department: entry.department,
+                );
+              }
+              emit(QueuePatientLoaded(queueEntry: entry, patientsAhead: ahead));
+            } catch (e) {
+              emit(QueuePatientLoaded(queueEntry: entry, patientsAhead: 0));
+            }
+          },
+          onError: (e) {
+            emit(QueuePatientError(_mapExceptionToFailure(e).message));
+          },
+        );
   }
 
   @override

@@ -169,6 +169,7 @@ class AppointmentRemoteDataSourceImpl implements AppointmentRemoteDataSource {
         updates['calledAt'] = Timestamp.fromDate(DateTime.now());
       } else if (status == 'served') {
         updates['servedAt'] = Timestamp.fromDate(DateTime.now());
+        updates['resultUploaded'] = false;
       } else if (status == 'no_show') {
         updates['isNoShow'] = true;
       }

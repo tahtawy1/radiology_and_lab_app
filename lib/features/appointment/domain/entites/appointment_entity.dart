@@ -44,6 +44,9 @@ class AppointmentEntity {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  /// Whether the result for this appointment has been uploaded.
+  final bool resultUploaded;
+
   const AppointmentEntity({
     required this.id,
     required this.patientId,
@@ -64,5 +67,6 @@ class AppointmentEntity {
     this.createdByType = 'patient_direct',
     required this.createdAt,
     required this.updatedAt,
+    this.resultUploaded = false,
   });
 }
