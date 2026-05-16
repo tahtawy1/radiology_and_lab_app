@@ -17,6 +17,14 @@ import '../../features/appointment/domain/usecases/update_appointment_status_use
 import '../../features/appointment/domain/usecases/get_doctors_usecase.dart';
 import '../../features/appointment/presentation/cubit/appointment_cubit.dart';
 
+// Queue Feature
+import '../../features/queue/data/datasource/queue_remote_datasource.dart';
+import '../../features/queue/data/repositories/queue_repository_impl.dart';
+import '../../features/queue/domain/repositories/queue_repository.dart';
+import '../../features/queue/domain/usecases/queue_usecases.dart';
+import '../../features/queue/presentation/admin_view/cubit/queue_admin_cubit.dart';
+import '../../features/queue/presentation/patient_view/cubit/queue_patient_cubit.dart';
+
 // Auth Feature
 import '../../features/auth/data/datasource/auth_remote_datasource.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
@@ -102,6 +110,42 @@ Future<void> initGetIt() async {
       getPatientAppointmentsUseCase: getIt(),
       updateAppointmentStatusUseCase: getIt(),
       getDoctorsUseCase: getIt(),
+    ),
+  );
+
+  // ---------------------------------------------------------------------------
+  // Queue Feature
+  // ---------------------------------------------------------------------------
+  // Data Sources
+  getIt.registerLazySingleton<QueueRemoteDataSource>(
+    () => QueueRemoteDataSourceImpl(firestore: getIt()),
+  );
+
+  // Repositories
+  getIt.registerLazySingleton<QueueRepository>(
+    () => QueueRepositoryImpl(remoteDataSource: getIt()),
+  );
+
+  // Use Cases
+  getIt.registerLazySingleton(() => GetTodayQueueUseCase(repository: getIt()));
+  getIt.registerLazySingleton(() => WatchPatientQueueEntryUseCase(repository: getIt()));
+  getIt.registerLazySingleton(() => CallNextPatientUseCase(repository: getIt()));
+  getIt.registerLazySingleton(() => MarkQueueDoneUseCase(repository: getIt()));
+  getIt.registerLazySingleton(() => MarkQueueNoShowUseCase(repository: getIt()));
+
+  // Cubits
+  getIt.registerFactory(
+    () => QueueAdminCubit(
+      getTodayQueueUseCase: getIt(),
+      callNextPatientUseCase: getIt(),
+      markQueueDoneUseCase: getIt(),
+      markQueueNoShowUseCase: getIt(),
+    ),
+  );
+
+  getIt.registerFactory(
+    () => QueuePatientCubit(
+      watchPatientQueueEntryUseCase: getIt(),
     ),
   );
 }
