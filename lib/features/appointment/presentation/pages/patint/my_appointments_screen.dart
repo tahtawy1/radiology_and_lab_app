@@ -3,10 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:radiology_and_lab_app/features/appointment/domain/entites/appointment_entity.dart';
+import 'package:radiology_and_lab_app/features/appointment/domain/entites/appointment_enums.dart';
 import 'package:radiology_and_lab_app/features/appointment/presentation/cubit/appointment_cubit.dart';
 import 'package:radiology_and_lab_app/features/appointment/presentation/cubit/appointment_state.dart';
-import 'package:radiology_and_lab_app/features/appointment/presentation/widgets/appointment_card.dart';
-import 'package:radiology_and_lab_app/features/appointment/presentation/widgets/empty_appointments_widget.dart';
+import 'package:radiology_and_lab_app/features/appointment/presentation/widgets/patint/appointment_card.dart';
+import 'package:radiology_and_lab_app/features/appointment/presentation/widgets/patint/empty_appointments_widget.dart';
 import 'package:radiology_and_lab_app/shared/widgets/app_snackbar.dart';
 
 class MyAppointmentsScreen extends StatefulWidget {
@@ -16,30 +17,24 @@ class MyAppointmentsScreen extends StatefulWidget {
   State<MyAppointmentsScreen> createState() => _MyAppointmentsScreenState();
 }
 
-class _MyAppointmentsScreenState extends State<MyAppointmentsScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
   String _selectedFilter = 'All';
-  final List<String> _filters = ['All', 'Confirmed', 'Pending', 'Cancelled'];
+  final List<String> _filters = [
+    'All',
+    'Pending',
+    'Confirmed',
+    'Completed',
+    'Cancelled',
+  ];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(() {
-      setState(() {});
-    });
     // Fetch appointments for the current user
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       context.read<AppointmentCubit>().getPatientAppointments(user.uid);
     }
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
   }
 
   void _onCancel(String appointmentId) {
@@ -80,25 +75,17 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen>
     );
   }
 
-  void _onReschedule(String appointmentId) {
-    AppSnackBar.showInfo(context, 'Coming soon');
-  }
-
   List<AppointmentEntity> _filterAppointments(
     List<AppointmentEntity> appointments,
-    bool isUpcoming,
   ) {
-    final now = DateTime.now();
-    return appointments.where((appt) {
-      final matchesTab =
-          isUpcoming
-              ? appt.appointmentDateTime.isAfter(now)
-              : appt.appointmentDateTime.isBefore(now);
-      final matchesFilter =
-          _selectedFilter == 'All' ||
-          appt.status.toLowerCase() == _selectedFilter.toLowerCase();
-      return matchesTab && matchesFilter;
-    }).toList();
+    if (_selectedFilter == 'All') return appointments;
+
+    return appointments
+        .where(
+          (appt) =>
+              appt.status.name.toLowerCase() == _selectedFilter.toLowerCase(),
+        )
+        .toList();
   }
 
   @override
@@ -115,22 +102,6 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen>
         title: const Text(
           'My Appointments',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-            ),
-            child: TabBar(
-              controller: _tabController,
-              labelColor: const Color(0xFF0D9488),
-              unselectedLabelColor: Colors.grey.shade600,
-              indicatorColor: const Color(0xFF0D9488),
-              indicatorWeight: 2,
-              tabs: const [Tab(text: 'Upcoming'), Tab(text: 'Past')],
-            ),
-          ),
         ),
       ),
       body: Column(
@@ -202,11 +173,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen>
                 } else if (state is AppointmentError) {
                   return Center(child: Text(state.message));
                 } else if (state is AppointmentsLoaded) {
-                  final isUpcoming = _tabController.index == 0;
-                  final filteredList = _filterAppointments(
-                    state.appointments,
-                    isUpcoming,
-                  );
+                  final filteredList = _filterAppointments(state.appointments);
 
                   if (filteredList.isEmpty) {
                     return const SingleChildScrollView(
@@ -222,7 +189,6 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen>
                       return AppointmentCard(
                         appointment: appointment,
                         onCancel: () => _onCancel(appointment.id),
-                        onReschedule: () => _onReschedule(appointment.id),
                       );
                     },
                   );

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../domain/entites/appointment_entity.dart';
+import '../../domain/entites/appointment_enums.dart';
 
 class AppointmentModel extends AppointmentEntity {
   const AppointmentModel({
@@ -12,8 +13,8 @@ class AppointmentModel extends AppointmentEntity {
     required super.appointmentDateTime,
     super.notes,
     required super.status,
-    required super.queueNumber,
-    required super.queueStatus,
+    super.queueNumber,
+    super.queueStatus,
     required super.isNoShow,
     super.calledAt,
     super.servedAt,
@@ -63,9 +64,9 @@ class AppointmentModel extends AppointmentEntity {
               ? (map['appointmentDateTime'] as Timestamp).toDate()
               : DateTime.now(),
       notes: map['notes'] as String?,
-      status: map['status'] ?? 'pending',
-      queueNumber: map['queueNumber'] ?? 0,
-      queueStatus: map['queueStatus'] ?? 'waiting',
+      status: AppointmentStatus.fromString(map['status'] ?? 'pending'),
+      queueNumber: map['queueNumber'] as int?,
+      queueStatus: map['queueStatus'] != null ? QueueStatus.fromString(map['queueStatus']) : null,
       isNoShow: map['isNoShow'] ?? false,
       calledAt:
           map['calledAt'] != null
@@ -100,9 +101,9 @@ class AppointmentModel extends AppointmentEntity {
       'testType': testType,
       'appointmentDateTime': Timestamp.fromDate(appointmentDateTime),
       'notes': notes,
-      'status': status,
+      'status': status.name,
       'queueNumber': queueNumber,
-      'queueStatus': queueStatus,
+      'queueStatus': queueStatus?.name,
       'isNoShow': isNoShow,
       'calledAt': calledAt != null ? Timestamp.fromDate(calledAt!) : null,
       'servedAt': servedAt != null ? Timestamp.fromDate(servedAt!) : null,
@@ -125,9 +126,9 @@ class AppointmentModel extends AppointmentEntity {
     String? testType,
     DateTime? appointmentDateTime,
     String? notes,
-    String? status,
+    AppointmentStatus? status,
     int? queueNumber,
-    String? queueStatus,
+    QueueStatus? queueStatus,
     bool? isNoShow,
     DateTime? calledAt,
     DateTime? servedAt,
