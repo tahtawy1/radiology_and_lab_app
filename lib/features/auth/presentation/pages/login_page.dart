@@ -62,9 +62,9 @@ class _LoginPageState extends State<LoginPage> {
             if (role == 'admin') {
               // context.go(AppStrings.adminHomeRoute);
             } else if (role == 'doctor') {
-              context.go(AppStrings.bookAppointmentRoute);
+              context.go(AppStrings.doctorApprovalRoute);
             } else {
-              context.go(AppStrings.bookAppointmentRoute);
+              context.go(AppStrings.queuePatientRoute);
             }
           } else if (state is AuthError) {
             AppSnackBar.showError(context, state.message);

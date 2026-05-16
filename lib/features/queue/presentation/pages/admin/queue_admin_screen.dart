@@ -241,7 +241,7 @@ class _QueueAdminViewState extends State<QueueAdminView> {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {
-                      context.read<QueueAdminCubit>().markServed(queueEntryId: entry.id, department: widget.department);
+                      context.read<QueueAdminCubit>().markServed(appointmentId: entry.id, department: widget.department);
                     },
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Color(0xFF0F766E)),
@@ -253,7 +253,7 @@ class _QueueAdminViewState extends State<QueueAdminView> {
                 const SizedBox(width: 12),
                 TextButton(
                   onPressed: () {
-                    context.read<QueueAdminCubit>().markNoShow(queueEntryId: entry.id, department: widget.department);
+                    context.read<QueueAdminCubit>().markNoShow(appointmentId: entry.id, department: widget.department);
                   },
                   child: const Text('No Show', style: TextStyle(color: Colors.red)),
                 ),
@@ -265,7 +265,7 @@ class _QueueAdminViewState extends State<QueueAdminView> {
               children: [
                 Icon(Icons.check, color: Colors.green, size: 16),
                 SizedBox(width: 4),
-                Text('Checked out', style: TextStyle(color: Colors.green, fontSize: 12)),
+                Text('Served', style: TextStyle(color: Colors.green, fontSize: 12)),
               ],
             ),
           ]
@@ -273,6 +273,7 @@ class _QueueAdminViewState extends State<QueueAdminView> {
       ),
     );
   }
+
 
   Widget _buildStatusBadge(String status) {
     Color bgColor;

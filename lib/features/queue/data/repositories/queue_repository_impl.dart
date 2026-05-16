@@ -27,9 +27,15 @@ class QueueRepositoryImpl implements QueueRepository {
   }
 
   @override
-  Future<void> checkInPatient({required String appointmentId, required String department}) async {
+  Future<void> checkInPatient({
+    required String appointmentId,
+    required String department,
+  }) async {
     try {
-      await remoteDataSource.checkInPatient(appointmentId: appointmentId, department: department);
+      await remoteDataSource.checkInPatient(
+        appointmentId: appointmentId,
+        department: department,
+      );
     } on AppException {
       rethrow;
     }
@@ -45,18 +51,33 @@ class QueueRepositoryImpl implements QueueRepository {
   }
 
   @override
-  Future<void> markServed({required String queueEntryId}) async {
+  Future<void> markServed({required String appointmentId}) async {
     try {
-      await remoteDataSource.markServed(queueEntryId: queueEntryId);
+      await remoteDataSource.markServed(appointmentId: appointmentId);
     } on AppException {
       rethrow;
     }
   }
 
   @override
-  Future<void> markNoShow({required String queueEntryId}) async {
+  Future<void> markNoShow({required String appointmentId}) async {
     try {
-      await remoteDataSource.markNoShow(queueEntryId: queueEntryId);
+      await remoteDataSource.markNoShow(appointmentId: appointmentId);
+    } on AppException {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<int> getPatientsAhead({
+    required int queueNumber,
+    required String department,
+  }) async {
+    try {
+      return await remoteDataSource.getPatientsAhead(
+        queueNumber: queueNumber,
+        department: department,
+      );
     } on AppException {
       rethrow;
     }

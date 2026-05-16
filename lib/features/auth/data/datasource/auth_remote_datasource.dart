@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -65,7 +67,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final user = UserModel.fromJson(doc.data()!);
 
       // Role validation
-      if (user.role != selectedRole) {
+      if (user.role != selectedRole.toLowerCase()) {
         await firebaseAuth.signOut();
 
         throw const AuthException('Selected role does not match your account');
@@ -77,6 +79,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } on FirebaseException catch (e) {
       throw ServerException(e.message ?? 'Database error occurred');
     } catch (e) {
+      log(e.toString());
       throw const ServerException('Something went wrong');
     }
   }

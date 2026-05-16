@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:radiology_and_lab_app/core/constants/app_strings.dart';
 import 'package:radiology_and_lab_app/core/di/injection_container.dart';
 import 'package:radiology_and_lab_app/features/auth/domain/usecases/get_current_user_usecase.dart';
-import 'package:radiology_and_lab_app/features/auth/domain/usecases/reset_password_usecase.dart';
 import 'package:radiology_and_lab_app/features/auth/domain/usecases/sign_in_usecase.dart';
 import 'package:radiology_and_lab_app/features/auth/domain/usecases/sign_out_usecase.dart';
 import 'package:radiology_and_lab_app/features/auth/domain/usecases/sign_up_usecase.dart';
@@ -20,10 +19,9 @@ import 'package:radiology_and_lab_app/features/queue/presentation/pages/admin/qu
 import 'package:radiology_and_lab_app/features/queue/presentation/cubit/queue_admin_cubit.dart';
 import 'package:radiology_and_lab_app/features/queue/presentation/pages/patient/queue_patient_screen.dart';
 import 'package:radiology_and_lab_app/features/queue/presentation/cubit/queue_patient_cubit.dart';
-import 'package:flutter/material.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: AppStrings.queueAdminRoute,
+  initialLocation: AppStrings.loginRoute,
   routes: [
     GoRoute(
       path: AppStrings.splashRoute,
@@ -63,7 +61,7 @@ final GoRouter appRouter = GoRouter(
     ),
     // GoRoute(
     //   path: AppStrings.homeRoute,
-    //   // builder: (_) => const _PlaceholderScreen(label: 'Home'),
+    // builder: (_) => const _PlaceholderScreen(label: 'Home'),
     // ),
     GoRoute(
       path: AppStrings.bookAppointmentRoute,

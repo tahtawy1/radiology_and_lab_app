@@ -5,7 +5,7 @@ class MarkQueueServedUseCase {
 
   MarkQueueServedUseCase({required this.repository});
 
-  Future<void> call({required String queueEntryId}) {
-    return repository.markServed(queueEntryId: queueEntryId);
+  Future<void> call({required String appointmentId}) {
+    return repository.markServed(appointmentId: appointmentId);
   }
 }

@@ -5,7 +5,7 @@ class MarkQueueNoShowUseCase {
 
   MarkQueueNoShowUseCase({required this.repository});
 
-  Future<void> call({required String queueEntryId}) {
-    return repository.markNoShow(queueEntryId: queueEntryId);
+  Future<void> call({required String appointmentId}) {
+    return repository.markNoShow(appointmentId: appointmentId);
   }
 }

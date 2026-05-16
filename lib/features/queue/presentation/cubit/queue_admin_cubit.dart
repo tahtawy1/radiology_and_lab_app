@@ -52,7 +52,7 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
   Future<void> checkInPatient({required String appointmentId, required String department}) async {
     try {
       await checkInPatientUseCase(appointmentId: appointmentId, department: department);
-      emit(QueueAdminActionSuccess('Patient checked in and added to queue'));
+      emit(QueueAdminActionSuccess('Patient checked in successfully'));
       await fetchQueue(department: department);
     } catch (e) {
       emit(QueueAdminError(_mapExceptionToFailure(e).message));
@@ -62,16 +62,16 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
   Future<void> callNextPatient({required String department}) async {
     try {
       await callNextPatientUseCase(department: department);
-      emit(QueueAdminActionSuccess('Next patient called successfully'));
+      emit(QueueAdminActionSuccess('Next patient called'));
       await fetchQueue(department: department);
     } catch (e) {
       emit(QueueAdminError(_mapExceptionToFailure(e).message));
     }
   }
 
-  Future<void> markServed({required String queueEntryId, required String department}) async {
+  Future<void> markServed({required String appointmentId, required String department}) async {
     try {
-      await markQueueServedUseCase(queueEntryId: queueEntryId);
+      await markQueueServedUseCase(appointmentId: appointmentId);
       emit(QueueAdminActionSuccess('Patient marked as served'));
       await fetchQueue(department: department);
     } catch (e) {
@@ -79,9 +79,9 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
     }
   }
 
-  Future<void> markNoShow({required String queueEntryId, required String department}) async {
+  Future<void> markNoShow({required String appointmentId, required String department}) async {
     try {
-      await markQueueNoShowUseCase(queueEntryId: queueEntryId);
+      await markQueueNoShowUseCase(appointmentId: appointmentId);
       emit(QueueAdminActionSuccess('Patient marked as no-show'));
       await fetchQueue(department: department);
     } catch (e) {
@@ -89,3 +89,5 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
     }
   }
 }
+
+

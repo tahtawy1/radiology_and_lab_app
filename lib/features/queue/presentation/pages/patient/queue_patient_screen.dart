@@ -167,14 +167,18 @@ class _QueuePatientViewState extends State<QueuePatientView> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('LIVE QUEUE', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1.5)),
+          const Text('YOUR NUMBER', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 10, letterSpacing: 1.5)),
           Text(
             '#${entry.queueNumber ?? '?'}',
             style: const TextStyle(fontSize: 70, fontWeight: FontWeight.w900, color: Color(0xFF111827), height: 1.2),
           ),
           Text(
-            entry.queueStatus?.name == 'called' ? 'It\'s your turn!' : 'Waiting',
-            style: const TextStyle(color: Color(0xFF0F766E), fontWeight: FontWeight.bold, fontSize: 16),
+            entry.queueStatus?.name == 'called' ? 'IT\'S YOUR TURN!' : 'WAITING...',
+            style: TextStyle(
+              color: entry.queueStatus?.name == 'called' ? Colors.orange : const Color(0xFF0F766E),
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
           ),
           const SizedBox(height: 12),
           Container(
@@ -183,9 +187,9 @@ class _QueuePatientViewState extends State<QueuePatientView> {
               color: const Color(0xFF111827),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Text(
-              'WAITING AREA',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+            child: Text(
+              entry.queueStatus?.name == 'called' ? 'GO TO ROOM 1' : 'WAITING AREA',
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10),
             ),
           )
         ],
@@ -197,21 +201,21 @@ class _QueuePatientViewState extends State<QueuePatientView> {
     return Column(
       children: [
         _buildCard(
-          icon: Icons.access_time,
-          iconColor: Colors.orange,
-          iconBg: Colors.orange.shade50,
-          title: 'EST. WAIT',
-          value: ahead > 0 ? '~ ${ahead * 15} Min' : 'Ready',
-          trailing: _buildBars(),
+          icon: Icons.notifications_active,
+          iconColor: Colors.blue,
+          iconBg: Colors.blue.shade50,
+          title: 'NOW SERVING',
+          value: entry.queueNumber != null ? '#${entry.queueNumber! - ahead}' : '...',
+          trailing: const SizedBox(),
         ),
         const SizedBox(height: 16),
         _buildCard(
           icon: Icons.people_outline,
-          iconColor: Colors.blue,
-          iconBg: Colors.blue.shade50,
-          title: 'AHEAD OF YOU',
+          iconColor: Colors.orange,
+          iconBg: Colors.orange.shade50,
+          title: 'PATIENTS AHEAD',
           value: '$ahead Patients',
-          trailing: const SizedBox(),
+          trailing: _buildBars(),
         ),
         const SizedBox(height: 16),
         _buildCard(
@@ -229,6 +233,7 @@ class _QueuePatientViewState extends State<QueuePatientView> {
       ],
     );
   }
+
 
   Widget _buildCard({
     required IconData icon,

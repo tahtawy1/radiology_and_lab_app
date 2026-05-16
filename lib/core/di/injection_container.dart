@@ -29,7 +29,9 @@ import '../../features/queue/domain/usecases/check_in_patient_usecase.dart';
 import '../../features/queue/domain/usecases/call_next_patient_usecase.dart';
 import '../../features/queue/domain/usecases/mark_queue_served_usecase.dart';
 import '../../features/queue/domain/usecases/mark_queue_no_show_usecase.dart';
+import '../../features/queue/domain/usecases/get_patients_ahead_usecase.dart';
 import '../../features/queue/presentation/cubit/queue_admin_cubit.dart';
+
 import '../../features/queue/presentation/cubit/queue_patient_cubit.dart';
 
 // Auth Feature
@@ -144,6 +146,8 @@ Future<void> initGetIt() async {
   getIt.registerLazySingleton(() => CallNextPatientUseCase(repository: getIt()));
   getIt.registerLazySingleton(() => MarkQueueServedUseCase(repository: getIt()));
   getIt.registerLazySingleton(() => MarkQueueNoShowUseCase(repository: getIt()));
+  getIt.registerLazySingleton(() => GetPatientsAheadUseCase(repository: getIt()));
+
 
   // Cubits
   getIt.registerFactory(
@@ -159,6 +163,8 @@ Future<void> initGetIt() async {
   getIt.registerFactory(
     () => QueuePatientCubit(
       watchPatientQueueEntryUseCase: getIt(),
+      getPatientsAheadUseCase: getIt(),
     ),
   );
+
 }
