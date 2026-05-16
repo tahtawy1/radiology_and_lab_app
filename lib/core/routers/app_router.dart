@@ -12,8 +12,9 @@ import 'package:radiology_and_lab_app/features/splash/presentation/view/splash_v
 import 'package:radiology_and_lab_app/features/splash/presentation/viewmodel/splash_cubit/splash_cubit.dart';
 import 'package:radiology_and_lab_app/features/auth/presentation/pages/login_page.dart';
 import 'package:radiology_and_lab_app/features/auth/presentation/pages/register_page.dart';
-import 'package:radiology_and_lab_app/features/appointment/presentation/pages/book_appointment_screen.dart';
-import 'package:radiology_and_lab_app/features/appointment/presentation/pages/my_appointments_screen.dart';
+import 'package:radiology_and_lab_app/features/appointment/presentation/pages/patint/book_appointment_screen.dart';
+import 'package:radiology_and_lab_app/features/appointment/presentation/pages/patint/my_appointments_screen.dart';
+import 'package:radiology_and_lab_app/features/appointment/presentation/pages/doctor/doctor_approval_screen.dart';
 import 'package:radiology_and_lab_app/features/appointment/presentation/cubit/appointment_cubit.dart';
 import 'package:flutter/material.dart';
 
@@ -74,6 +75,14 @@ final GoRouter appRouter = GoRouter(
           (_, _) => BlocProvider<AppointmentCubit>(
             create: (context) => getIt<AppointmentCubit>(),
             child: const MyAppointmentsScreen(),
+          ),
+    ),
+    GoRoute(
+      path: AppStrings.doctorApprovalRoute,
+      builder:
+          (_, _) => BlocProvider<AppointmentCubit>(
+            create: (context) => getIt<AppointmentCubit>(),
+            child: const DoctorApprovalScreen(),
           ),
     ),
   ],

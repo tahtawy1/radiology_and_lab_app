@@ -5,4 +5,5 @@ class AppStrings {
   static const String registerRoute = '/register';
   static const String bookAppointmentRoute = '/book_appointment';
   static const String myAppointmentsRoute = '/my_appointments';
+  static const String doctorApprovalRoute = '/doctor_approval';
 }

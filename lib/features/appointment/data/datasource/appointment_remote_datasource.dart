@@ -9,11 +9,20 @@ abstract class AppointmentRemoteDataSource {
 
   Future<List<AppointmentModel>> getAppointmentsByPatientId(String patientId);
 
+  Future<List<AppointmentModel>> getPendingAppointmentsForDoctor(
+    String doctorId,
+  );
+
   Future<List<AppointmentModel>> getAllAppointments();
 
   Future<void> cancelAppointment(String appointmentId);
 
   Future<void> updateAppointmentStatus({
+    required String appointmentId,
+    required String status,
+  });
+
+  Future<void> updateQueueStatus({
     required String appointmentId,
     required String status,
   });
@@ -29,39 +38,10 @@ class AppointmentRemoteDataSourceImpl implements AppointmentRemoteDataSource {
   @override
   Future<void> bookAppointment(AppointmentModel appointment) async {
     try {
-      // 1. Queue Number Generation
-      // Count existing appointments for the same date + department.
-      // Requires Composite Firestore Index: department (ASC) + appointmentDateTime (ASC)
-      final startOfDay = DateTime(
-        appointment.appointmentDateTime.year,
-        appointment.appointmentDateTime.month,
-        appointment.appointmentDateTime.day,
-      );
-      final endOfDay = startOfDay.add(const Duration(days: 1));
-
-      final countSnapshot =
-          await firestore
-              .collection('appointments')
-              .where('department', isEqualTo: appointment.department)
-              .where(
-                'appointmentDateTime',
-                isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay),
-              )
-              .where(
-                'appointmentDateTime',
-                isLessThan: Timestamp.fromDate(endOfDay),
-              )
-              .count()
-              .get();
-
-      final queueNumber = (countSnapshot.count ?? 0) + 1;
-
-      // 2. Save appointment with generated queue number
       final docRef = firestore.collection('appointments').doc();
 
       final updatedAppointment = appointment.copyWith(
         id: docRef.id,
-        queueNumber: queueNumber,
       );
 
       await docRef.set(updatedAppointment.toMap());
@@ -131,6 +111,33 @@ class AppointmentRemoteDataSourceImpl implements AppointmentRemoteDataSource {
   }
 
   @override
+  Future<List<AppointmentModel>> getPendingAppointmentsForDoctor(
+    String doctorId,
+  ) async {
+    try {
+      final snapshot =
+          await firestore
+              .collection('appointments')
+              .where('doctorId', isEqualTo: doctorId)
+              .where('status', isEqualTo: 'pending')
+              .orderBy('appointmentDateTime', descending: false)
+              .get();
+
+      return snapshot.docs
+          .map((doc) => AppointmentModel.fromMap(doc.data()))
+          .toList();
+    } on FirebaseException catch (e) {
+      print(e.message);
+      throw ServerException(FirebaseErrorMapper.getMessage(e));
+    } catch (e) {
+      print(e);
+      throw const ServerException(
+        'Failed to fetch pending appointments for doctor',
+      );
+    }
+  }
+
+  @override
   Future<void> updateAppointmentStatus({
     required String appointmentId,
     required String status,
@@ -144,6 +151,36 @@ class AppointmentRemoteDataSourceImpl implements AppointmentRemoteDataSource {
       throw ServerException(FirebaseErrorMapper.getMessage(e));
     } catch (e) {
       throw const ServerException('Failed to update appointment status');
+    }
+  }
+
+  @override
+  Future<void> updateQueueStatus({
+    required String appointmentId,
+    required String status,
+  }) async {
+    try {
+      final updates = <String, dynamic>{
+        'queueStatus': status,
+        'updatedAt': Timestamp.fromDate(DateTime.now()),
+      };
+
+      if (status == 'called') {
+        updates['calledAt'] = Timestamp.fromDate(DateTime.now());
+      } else if (status == 'served') {
+        updates['servedAt'] = Timestamp.fromDate(DateTime.now());
+      } else if (status == 'no_show') {
+        updates['isNoShow'] = true;
+      }
+
+      await firestore
+          .collection('appointments')
+          .doc(appointmentId)
+          .update(updates);
+    } on FirebaseException catch (e) {
+      throw ServerException(FirebaseErrorMapper.getMessage(e));
+    } catch (e) {
+      throw const ServerException('Failed to update queue status');
     }
   }
 
