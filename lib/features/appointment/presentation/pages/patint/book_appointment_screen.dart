@@ -4,11 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:radiology_and_lab_app/core/constants/app_strings.dart';
 import 'package:radiology_and_lab_app/features/appointment/domain/entites/appointment_entity.dart';
+import 'package:radiology_and_lab_app/features/appointment/domain/entites/appointment_enums.dart';
 import 'package:radiology_and_lab_app/features/appointment/presentation/cubit/appointment_cubit.dart';
 import 'package:radiology_and_lab_app/features/appointment/presentation/cubit/appointment_state.dart';
-import 'package:radiology_and_lab_app/features/appointment/presentation/widgets/date_selector.dart';
-import 'package:radiology_and_lab_app/features/appointment/presentation/widgets/department_selector.dart';
-import 'package:radiology_and_lab_app/features/appointment/presentation/widgets/test_type_chip.dart';
+import 'package:radiology_and_lab_app/features/appointment/presentation/widgets/patint/date_selector.dart';
+import 'package:radiology_and_lab_app/features/appointment/presentation/widgets/patint/department_selector.dart';
+import 'package:radiology_and_lab_app/features/appointment/presentation/widgets/patint/test_type_chip.dart';
 import 'package:radiology_and_lab_app/shared/widgets/app_snackbar.dart';
 
 /// BookAppointmentScreen
@@ -101,9 +102,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
       testType: _selectedTestType!,
       appointmentDateTime: appointmentDate,
       notes: notes,
-      status: 'pending',
-      queueNumber: 0, // Assigned by server during bookAppointment
-      queueStatus: 'waiting',
+      status: AppointmentStatus.pending,
       isNoShow: false,
       doctorId: _selectedDoctor!['id']!,
       doctorName: _selectedDoctor!['name']!,
