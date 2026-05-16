@@ -14,7 +14,9 @@ import '../../features/appointment/domain/usecases/cancel_appointment_usecase.da
 import '../../features/appointment/domain/usecases/get_all_appointments_usecase.dart';
 import '../../features/appointment/domain/usecases/get_patient_appointments_usecase.dart';
 import '../../features/appointment/domain/usecases/update_appointment_status_usecase.dart';
+import '../../features/appointment/domain/usecases/update_queue_status_usecase.dart';
 import '../../features/appointment/domain/usecases/get_doctors_usecase.dart';
+import '../../features/appointment/domain/usecases/get_pending_appointments_for_doctor_usecase.dart';
 import '../../features/appointment/presentation/cubit/appointment_cubit.dart';
 
 // Queue Feature
@@ -99,7 +101,9 @@ Future<void> initGetIt() async {
   getIt.registerLazySingleton(() => GetAllAppointmentsUseCase(repository: getIt()));
   getIt.registerLazySingleton(() => GetPatientAppointmentsUseCase(repository: getIt()));
   getIt.registerLazySingleton(() => UpdateAppointmentStatusUseCase(repository: getIt()));
+  getIt.registerLazySingleton(() => UpdateQueueStatusUseCase(repository: getIt()));
   getIt.registerLazySingleton(() => GetDoctorsUseCase(repository: getIt()));
+  getIt.registerLazySingleton(() => GetPendingAppointmentsForDoctorUseCase(repository: getIt()));
 
   // Cubits
   getIt.registerFactory(
@@ -109,7 +113,9 @@ Future<void> initGetIt() async {
       getAllAppointmentsUseCase: getIt(),
       getPatientAppointmentsUseCase: getIt(),
       updateAppointmentStatusUseCase: getIt(),
+      updateQueueStatusUseCase: getIt(),
       getDoctorsUseCase: getIt(),
+      getPendingAppointmentsForDoctorUseCase: getIt(),
     ),
   );
 

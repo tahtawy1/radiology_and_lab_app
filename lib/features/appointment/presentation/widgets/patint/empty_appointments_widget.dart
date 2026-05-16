@@ -39,7 +39,7 @@ class EmptyAppointmentsWidget extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           const Text(
-            'No upcoming appointments',
+            'No appointments found',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,

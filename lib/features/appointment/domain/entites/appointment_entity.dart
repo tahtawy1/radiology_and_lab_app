@@ -1,6 +1,4 @@
-// Appointment status values: pending | confirmed | completed | cancelled
-// Queue status values:       waiting | called | served | no_show
-// Created by type values:    patient_direct | doctor_request
+import 'appointment_enums.dart';
 
 class AppointmentEntity {
   final String id;
@@ -16,13 +14,13 @@ class AppointmentEntity {
   final String? notes;
 
   /// Appointment lifecycle status: pending | confirmed | completed | cancelled
-  final String status;
+  final AppointmentStatus status;
 
   // ── Queue fields (managed by queue_feature later) ──────────────────────────
-  final int queueNumber;
+  final int? queueNumber;
 
   /// Queue status: waiting | called | served | no_show
-  final String queueStatus;
+  final QueueStatus? queueStatus;
   final bool isNoShow;
   final DateTime? calledAt;
   final DateTime? servedAt;
@@ -55,8 +53,8 @@ class AppointmentEntity {
     required this.appointmentDateTime,
     this.notes,
     required this.status,
-    required this.queueNumber,
-    required this.queueStatus,
+    this.queueNumber,
+    this.queueStatus,
     required this.isNoShow,
     this.calledAt,
     this.servedAt,

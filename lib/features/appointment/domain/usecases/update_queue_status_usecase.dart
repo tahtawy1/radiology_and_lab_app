@@ -1,16 +1,16 @@
 import '../entites/appointment_enums.dart';
 import '../repositories/appointment_repository.dart';
 
-class UpdateAppointmentStatusUseCase {
+class UpdateQueueStatusUseCase {
   final AppointmentRepository repository;
 
-  UpdateAppointmentStatusUseCase({required this.repository});
+  UpdateQueueStatusUseCase({required this.repository});
 
   Future<void> call({
     required String appointmentId,
-    required AppointmentStatus status,
+    required QueueStatus status,
   }) async {
-    await repository.updateAppointmentStatus(
+    await repository.updateQueueStatus(
       appointmentId: appointmentId,
       status: status,
     );
