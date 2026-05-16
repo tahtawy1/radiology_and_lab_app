@@ -20,7 +20,7 @@ import 'package:radiology_and_lab_app/shared/widgets/app_snackbar.dart';
 ///   3. Select preferred date
 ///   4. Select referring doctor from dropdown — REQUIRED
 ///   5. Enter notes — Optional
-///   6. Confirm → saved as status=pending, queueNumber assigned by server
+///   6. Confirm → saved as status=pending (queueNumber assigned LATER by queue_feature)
 class BookAppointmentScreen extends StatefulWidget {
   const BookAppointmentScreen({super.key});
 

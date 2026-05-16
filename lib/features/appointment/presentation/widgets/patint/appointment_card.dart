@@ -163,48 +163,93 @@ class AppointmentCard extends StatelessWidget {
                           builder: (context) {
                             if (appointment.status ==
                                 AppointmentStatus.pending) {
-                              return SizedBox(
-                                width: double.infinity,
-                                child: TextButton(
-                                  onPressed: onCancel,
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: Colors.red.shade600,
+                              return Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.info_outline, size: 14, color: Colors.orange.shade700),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Waiting doctor approval',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.orange.shade700,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  child: Text(
-                                    'Cancel Appointment',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.red.shade600,
+                                  const SizedBox(height: 8),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: TextButton(
+                                      onPressed: onCancel,
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: Colors.red.shade600,
+                                      ),
+                                      child: Text(
+                                        'Cancel Appointment',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.red.shade600,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
+                                ],
                               );
                             } else if (appointment.status ==
                                 AppointmentStatus.confirmed) {
-                              return SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton.icon(
-                                  onPressed: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Navigating to Queue Status...',
+                              if (appointment.queueStatus == null) {
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.shade50,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: Colors.blue.shade100),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.hourglass_empty, size: 16, color: Colors.blue.shade700),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Medically Approved - Awaiting Queue',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.blue.shade700,
                                         ),
                                       ),
-                                    );
-                                  },
-                                  icon: const Icon(Icons.queue, size: 18),
-                                  label: const Text('View Queue'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFF0FDF4),
-                                    foregroundColor: const Color(0xFF0D9488),
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
+                                    ],
+                                  ),
+                                );
+                              } else {
+                                return SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton.icon(
+                                    onPressed: () {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Navigating to Queue Status...',
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(Icons.queue, size: 18),
+                                    label: const Text('View Queue'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFF0FDF4),
+                                      foregroundColor: const Color(0xFF0D9488),
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              );
+                                );
+                              }
                             } else if (appointment.status ==
                                 AppointmentStatus.completed) {
                               return SizedBox(
