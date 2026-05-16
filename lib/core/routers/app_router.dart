@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:radiology_and_lab_app/core/constants/app_strings.dart';
 import 'package:radiology_and_lab_app/core/di/injection_container.dart';
 import 'package:radiology_and_lab_app/features/auth/domain/usecases/get_current_user_usecase.dart';
-import 'package:radiology_and_lab_app/features/auth/domain/usecases/reset_password_usecase.dart';
 import 'package:radiology_and_lab_app/features/auth/domain/usecases/sign_in_usecase.dart';
 import 'package:radiology_and_lab_app/features/auth/domain/usecases/sign_out_usecase.dart';
 import 'package:radiology_and_lab_app/features/auth/domain/usecases/sign_up_usecase.dart';
@@ -16,10 +15,13 @@ import 'package:radiology_and_lab_app/features/appointment/presentation/pages/pa
 import 'package:radiology_and_lab_app/features/appointment/presentation/pages/patint/my_appointments_screen.dart';
 import 'package:radiology_and_lab_app/features/appointment/presentation/pages/doctor/doctor_approval_screen.dart';
 import 'package:radiology_and_lab_app/features/appointment/presentation/cubit/appointment_cubit.dart';
-import 'package:flutter/material.dart';
+import 'package:radiology_and_lab_app/features/queue/presentation/pages/admin/queue_admin_screen.dart';
+import 'package:radiology_and_lab_app/features/queue/presentation/cubit/queue_admin_cubit.dart';
+import 'package:radiology_and_lab_app/features/queue/presentation/pages/patient/queue_patient_screen.dart';
+import 'package:radiology_and_lab_app/features/queue/presentation/cubit/queue_patient_cubit.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: AppStrings.splashRoute,
+  initialLocation: AppStrings.loginRoute,
   routes: [
     GoRoute(
       path: AppStrings.splashRoute,
@@ -59,7 +61,7 @@ final GoRouter appRouter = GoRouter(
     ),
     // GoRoute(
     //   path: AppStrings.homeRoute,
-    //   // builder: (_) => const _PlaceholderScreen(label: 'Home'),
+    // builder: (_) => const _PlaceholderScreen(label: 'Home'),
     // ),
     GoRoute(
       path: AppStrings.bookAppointmentRoute,
@@ -83,6 +85,23 @@ final GoRouter appRouter = GoRouter(
           (_, _) => BlocProvider<AppointmentCubit>(
             create: (context) => getIt<AppointmentCubit>(),
             child: const DoctorApprovalScreen(),
+          ),
+    ),
+
+    GoRoute(
+      path: AppStrings.queueAdminRoute,
+      builder:
+          (_, _) => BlocProvider<QueueAdminCubit>(
+            create: (context) => getIt<QueueAdminCubit>(),
+            child: const QueueAdminView(),
+          ),
+    ),
+    GoRoute(
+      path: AppStrings.queuePatientRoute,
+      builder:
+          (_, _) => BlocProvider<QueuePatientCubit>(
+            create: (context) => getIt<QueuePatientCubit>(),
+            child: const QueuePatientView(),
           ),
     ),
   ],

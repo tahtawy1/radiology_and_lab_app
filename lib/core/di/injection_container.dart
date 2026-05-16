@@ -19,6 +19,21 @@ import '../../features/appointment/domain/usecases/get_doctors_usecase.dart';
 import '../../features/appointment/domain/usecases/get_pending_appointments_for_doctor_usecase.dart';
 import '../../features/appointment/presentation/cubit/appointment_cubit.dart';
 
+// Queue Feature
+import '../../features/queue/data/datasource/queue_remote_datasource.dart';
+import '../../features/queue/data/repositories/queue_repository_impl.dart';
+import '../../features/queue/domain/repositories/queue_repository.dart';
+import '../../features/queue/domain/usecases/get_today_queue_usecase.dart';
+import '../../features/queue/domain/usecases/watch_patient_queue_entry_usecase.dart';
+import '../../features/queue/domain/usecases/check_in_patient_usecase.dart';
+import '../../features/queue/domain/usecases/call_next_patient_usecase.dart';
+import '../../features/queue/domain/usecases/mark_queue_served_usecase.dart';
+import '../../features/queue/domain/usecases/mark_queue_no_show_usecase.dart';
+import '../../features/queue/domain/usecases/get_patients_ahead_usecase.dart';
+import '../../features/queue/presentation/cubit/queue_admin_cubit.dart';
+
+import '../../features/queue/presentation/cubit/queue_patient_cubit.dart';
+
 // Auth Feature
 import '../../features/auth/data/datasource/auth_remote_datasource.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
@@ -110,4 +125,46 @@ Future<void> initGetIt() async {
       getPendingAppointmentsForDoctorUseCase: getIt(),
     ),
   );
+
+  // ---------------------------------------------------------------------------
+  // Queue Feature
+  // ---------------------------------------------------------------------------
+  // Data Sources
+  getIt.registerLazySingleton<QueueRemoteDataSource>(
+    () => QueueRemoteDataSourceImpl(firestore: getIt()),
+  );
+
+  // Repositories
+  getIt.registerLazySingleton<QueueRepository>(
+    () => QueueRepositoryImpl(remoteDataSource: getIt()),
+  );
+
+  // Use Cases
+  getIt.registerLazySingleton(() => GetTodayQueueUseCase(repository: getIt()));
+  getIt.registerLazySingleton(() => WatchPatientQueueEntryUseCase(repository: getIt()));
+  getIt.registerLazySingleton(() => CheckInPatientUseCase(repository: getIt()));
+  getIt.registerLazySingleton(() => CallNextPatientUseCase(repository: getIt()));
+  getIt.registerLazySingleton(() => MarkQueueServedUseCase(repository: getIt()));
+  getIt.registerLazySingleton(() => MarkQueueNoShowUseCase(repository: getIt()));
+  getIt.registerLazySingleton(() => GetPatientsAheadUseCase(repository: getIt()));
+
+
+  // Cubits
+  getIt.registerFactory(
+    () => QueueAdminCubit(
+      getTodayQueueUseCase: getIt(),
+      checkInPatientUseCase: getIt(),
+      callNextPatientUseCase: getIt(),
+      markQueueServedUseCase: getIt(),
+      markQueueNoShowUseCase: getIt(),
+    ),
+  );
+
+  getIt.registerFactory(
+    () => QueuePatientCubit(
+      watchPatientQueueEntryUseCase: getIt(),
+      getPatientsAheadUseCase: getIt(),
+    ),
+  );
+
 }
