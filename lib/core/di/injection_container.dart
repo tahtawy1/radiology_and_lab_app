@@ -23,9 +23,14 @@ import '../../features/appointment/presentation/cubit/appointment_cubit.dart';
 import '../../features/queue/data/datasource/queue_remote_datasource.dart';
 import '../../features/queue/data/repositories/queue_repository_impl.dart';
 import '../../features/queue/domain/repositories/queue_repository.dart';
-import '../../features/queue/domain/usecases/queue_usecases.dart';
-import '../../features/queue/presentation/admin_view/cubit/queue_admin_cubit.dart';
-import '../../features/queue/presentation/patient_view/cubit/queue_patient_cubit.dart';
+import '../../features/queue/domain/usecases/get_today_queue_usecase.dart';
+import '../../features/queue/domain/usecases/watch_patient_queue_entry_usecase.dart';
+import '../../features/queue/domain/usecases/check_in_patient_usecase.dart';
+import '../../features/queue/domain/usecases/call_next_patient_usecase.dart';
+import '../../features/queue/domain/usecases/mark_queue_served_usecase.dart';
+import '../../features/queue/domain/usecases/mark_queue_no_show_usecase.dart';
+import '../../features/queue/presentation/cubit/queue_admin_cubit.dart';
+import '../../features/queue/presentation/cubit/queue_patient_cubit.dart';
 
 // Auth Feature
 import '../../features/auth/data/datasource/auth_remote_datasource.dart';
@@ -135,16 +140,18 @@ Future<void> initGetIt() async {
   // Use Cases
   getIt.registerLazySingleton(() => GetTodayQueueUseCase(repository: getIt()));
   getIt.registerLazySingleton(() => WatchPatientQueueEntryUseCase(repository: getIt()));
+  getIt.registerLazySingleton(() => CheckInPatientUseCase(repository: getIt()));
   getIt.registerLazySingleton(() => CallNextPatientUseCase(repository: getIt()));
-  getIt.registerLazySingleton(() => MarkQueueDoneUseCase(repository: getIt()));
+  getIt.registerLazySingleton(() => MarkQueueServedUseCase(repository: getIt()));
   getIt.registerLazySingleton(() => MarkQueueNoShowUseCase(repository: getIt()));
 
   // Cubits
   getIt.registerFactory(
     () => QueueAdminCubit(
       getTodayQueueUseCase: getIt(),
+      checkInPatientUseCase: getIt(),
       callNextPatientUseCase: getIt(),
-      markQueueDoneUseCase: getIt(),
+      markQueueServedUseCase: getIt(),
       markQueueNoShowUseCase: getIt(),
     ),
   );

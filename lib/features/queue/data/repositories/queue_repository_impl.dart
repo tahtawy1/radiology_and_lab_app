@@ -1,5 +1,5 @@
 import '../../../../core/errors/exceptions.dart';
-import '../../domain/entities/queue_entry_entity.dart';
+import 'package:radiology_and_lab_app/features/appointment/domain/entites/appointment_entity.dart';
 import '../../domain/repositories/queue_repository.dart';
 import '../datasource/queue_remote_datasource.dart';
 
@@ -9,7 +9,7 @@ class QueueRepositoryImpl implements QueueRepository {
   QueueRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<List<QueueEntryEntity>> getTodayQueue({
+  Future<List<AppointmentEntity>> getTodayQueue({
     required String department,
   }) async {
     try {
@@ -20,10 +20,19 @@ class QueueRepositoryImpl implements QueueRepository {
   }
 
   @override
-  Stream<QueueEntryEntity?> watchPatientQueueEntry({
+  Stream<AppointmentEntity?> watchPatientQueueEntry({
     required String patientId,
   }) {
     return remoteDataSource.watchPatientQueueEntry(patientId: patientId);
+  }
+
+  @override
+  Future<void> checkInPatient({required String appointmentId, required String department}) async {
+    try {
+      await remoteDataSource.checkInPatient(appointmentId: appointmentId, department: department);
+    } on AppException {
+      rethrow;
+    }
   }
 
   @override
@@ -36,9 +45,9 @@ class QueueRepositoryImpl implements QueueRepository {
   }
 
   @override
-  Future<void> markDone({required String queueEntryId}) async {
+  Future<void> markServed({required String queueEntryId}) async {
     try {
-      await remoteDataSource.markDone(queueEntryId: queueEntryId);
+      await remoteDataSource.markServed(queueEntryId: queueEntryId);
     } on AppException {
       rethrow;
     }

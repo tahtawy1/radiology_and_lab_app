@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../shared/widgets/app_snackbar.dart';
-import '../../domain/entities/queue_entry_entity.dart';
-import 'cubit/queue_admin_cubit.dart';
+import 'package:intl/intl.dart';
+
+import '../../../../../shared/widgets/app_snackbar.dart';
+import 'package:radiology_and_lab_app/features/appointment/domain/entites/appointment_entity.dart';
+import '../../cubit/queue_admin_cubit.dart';
+import '../../cubit/queue_admin_state.dart';
 
 class QueueAdminView extends StatefulWidget {
   final String department;
@@ -58,10 +60,25 @@ class _QueueAdminViewState extends State<QueueAdminView> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   _buildStatsRow(state),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
+                  
+                  // SECTION 1: Confirmed Appointments (Pending Check-In)
+                  const Text('Pending Check-In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  const SizedBox(height: 12),
+                  ...state.queueEntries
+                      .where((e) => e.status.name == 'confirmed' && e.queueStatus == null)
+                      .map((e) => _buildConfirmedCard(context, e)),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // SECTION 2: Active Queue
+                  const Text('Active Queue', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  const SizedBox(height: 12),
                   _buildCallNextButton(context),
                   const SizedBox(height: 16),
-                  ...state.queueEntries.map((e) => _buildPatientCard(context, e)),
+                  ...state.queueEntries
+                      .where((e) => e.queueStatus != null)
+                      .map((e) => _buildPatientCard(context, e)),
                 ],
               ),
             );
@@ -70,7 +87,6 @@ class _QueueAdminViewState extends State<QueueAdminView> {
           return const Center(child: Text('No Data'));
         },
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
@@ -79,9 +95,9 @@ class _QueueAdminViewState extends State<QueueAdminView> {
       children: [
         Expanded(child: _buildStatCard('Total Today', state.totalToday.toString(), Colors.black)),
         const SizedBox(width: 8),
-        Expanded(child: _buildStatCard('In Progress', state.inProgress.toString(), Colors.blue)),
+        Expanded(child: _buildStatCard('Called', state.called.toString(), Colors.blue)),
         const SizedBox(width: 8),
-        Expanded(child: _buildStatCard('Completed', state.completed.toString(), Colors.green)),
+        Expanded(child: _buildStatCard('Served', state.served.toString(), Colors.green)),
       ],
     );
   }
@@ -93,7 +109,7 @@ class _QueueAdminViewState extends State<QueueAdminView> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: Column(
@@ -125,7 +141,67 @@ class _QueueAdminViewState extends State<QueueAdminView> {
     );
   }
 
-  Widget _buildPatientCard(BuildContext context, QueueEntryEntity entry) {
+  // Card for patients who are confirmed medically but not yet in the physical queue
+  Widget _buildConfirmedCard(BuildContext context, AppointmentEntity entry) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.orange.shade200),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 2)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(entry.patientName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(entry.testType, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                  ],
+                ),
+              ),
+              Container(
+                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                 decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(12)),
+                 child: const Text('Confirmed', style: TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Appointment: ${DateFormat('hh:mm a').format(entry.appointmentDateTime)}',
+            style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                context.read<QueueAdminCubit>().checkInPatient(appointmentId: entry.id, department: widget.department);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0F766E),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text('Check-In to Queue', style: TextStyle(color: Colors.white)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Card for patients actively in the queue
+  Widget _buildPatientCard(BuildContext context, AppointmentEntity entry) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -133,7 +209,7 @@ class _QueueAdminViewState extends State<QueueAdminView> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: Column(
@@ -143,7 +219,7 @@ class _QueueAdminViewState extends State<QueueAdminView> {
               CircleAvatar(
                 backgroundColor: const Color(0xFF0F766E),
                 radius: 20,
-                child: Text('#${entry.queueNumber}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: Text('#${entry.queueNumber ?? '?'}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -155,23 +231,23 @@ class _QueueAdminViewState extends State<QueueAdminView> {
                   ],
                 ),
               ),
-              _buildStatusBadge(entry.queueStatus),
+              _buildStatusBadge(entry.queueStatus?.name ?? 'unknown'),
             ],
           ),
-          if (entry.queueStatus == 'waiting' || entry.queueStatus == 'in_progress') ...[
+          if (entry.queueStatus?.name == 'waiting' || entry.queueStatus?.name == 'called') ...[
             const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {
-                      context.read<QueueAdminCubit>().markDone(queueEntryId: entry.id, department: widget.department);
+                      context.read<QueueAdminCubit>().markServed(queueEntryId: entry.id, department: widget.department);
                     },
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Color(0xFF0F766E)),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
-                    child: const Text('Mark Done', style: TextStyle(color: Color(0xFF0F766E))),
+                    child: const Text('Mark Served', style: TextStyle(color: Color(0xFF0F766E))),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -183,7 +259,7 @@ class _QueueAdminViewState extends State<QueueAdminView> {
                 ),
               ],
             ),
-          ] else if (entry.queueStatus == 'completed') ...[
+          ] else if (entry.queueStatus?.name == 'served') ...[
             const SizedBox(height: 12),
             const Row(
               children: [
@@ -204,20 +280,20 @@ class _QueueAdminViewState extends State<QueueAdminView> {
     String text;
 
     switch (status) {
-      case 'in_progress':
+      case 'called':
         bgColor = const Color(0xFFDBEAFE);
         textColor = const Color(0xFF1D4ED8);
-        text = 'In Progress';
+        text = 'Called';
         break;
       case 'waiting':
         bgColor = const Color(0xFFFEF3C7);
         textColor = const Color(0xFFB45309);
         text = 'Waiting';
         break;
-      case 'completed':
+      case 'served':
         bgColor = const Color(0xFFD1FAE5);
         textColor = const Color(0xFF047857);
-        text = 'Completed';
+        text = 'Served';
         break;
       case 'no_show':
         bgColor = const Color(0xFFFEE2E2);
@@ -234,20 +310,6 @@ class _QueueAdminViewState extends State<QueueAdminView> {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(12)),
       child: Text(text, style: TextStyle(color: textColor, fontSize: 10, fontWeight: FontWeight.bold)),
-    );
-  }
-
-  Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: const Color(0xFF0F766E),
-      unselectedItemColor: Colors.grey.shade500,
-      currentIndex: 1, // Queue
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), label: 'Dashboard'),
-        BottomNavigationBarItem(icon: Icon(Icons.queue_outlined), label: 'Queue'),
-        BottomNavigationBarItem(icon: Icon(Icons.people_outline), label: 'Users'),
-      ],
     );
   }
 }

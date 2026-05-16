@@ -16,10 +16,10 @@ import 'package:radiology_and_lab_app/features/appointment/presentation/pages/pa
 import 'package:radiology_and_lab_app/features/appointment/presentation/pages/patint/my_appointments_screen.dart';
 import 'package:radiology_and_lab_app/features/appointment/presentation/pages/doctor/doctor_approval_screen.dart';
 import 'package:radiology_and_lab_app/features/appointment/presentation/cubit/appointment_cubit.dart';
-import 'package:radiology_and_lab_app/features/queue/presentation/admin_view/queue_admin_view.dart';
-import 'package:radiology_and_lab_app/features/queue/presentation/admin_view/cubit/queue_admin_cubit.dart';
-import 'package:radiology_and_lab_app/features/queue/presentation/patient_view/queue_patient_view.dart';
-import 'package:radiology_and_lab_app/features/queue/presentation/patient_view/cubit/queue_patient_cubit.dart';
+import 'package:radiology_and_lab_app/features/queue/presentation/pages/admin/queue_admin_screen.dart';
+import 'package:radiology_and_lab_app/features/queue/presentation/cubit/queue_admin_cubit.dart';
+import 'package:radiology_and_lab_app/features/queue/presentation/pages/patient/queue_patient_screen.dart';
+import 'package:radiology_and_lab_app/features/queue/presentation/cubit/queue_patient_cubit.dart';
 import 'package:flutter/material.dart';
 
 final GoRouter appRouter = GoRouter(

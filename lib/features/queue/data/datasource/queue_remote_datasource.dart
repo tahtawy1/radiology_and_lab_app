@@ -1,13 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/firebase_error_mapper.dart';
-import '../models/queue_entry_model.dart';
+import 'package:radiology_and_lab_app/features/appointment/data/models/appointment_model.dart';
 
 abstract class QueueRemoteDataSource {
-  Future<List<QueueEntryModel>> getTodayQueue({required String department});
-  Stream<QueueEntryModel?> watchPatientQueueEntry({required String patientId});
+  Future<List<AppointmentModel>> getTodayQueue({required String department});
+  Stream<AppointmentModel?> watchPatientQueueEntry({required String patientId});
+  Future<void> checkInPatient({required String appointmentId, required String department});
   Future<void> callNextPatient({required String department});
-  Future<void> markDone({required String queueEntryId});
+  Future<void> markServed({required String queueEntryId});
   Future<void> markNoShow({required String queueEntryId});
   Future<void> setNotifyMe({required String patientId, required bool enabled});
 }
@@ -27,7 +28,7 @@ class QueueRemoteDataSourceImpl implements QueueRemoteDataSource {
   }
 
   @override
-  Future<List<QueueEntryModel>> getTodayQueue({
+  Future<List<AppointmentModel>> getTodayQueue({
     required String department,
   }) async {
     try {
@@ -43,13 +44,26 @@ class QueueRemoteDataSourceImpl implements QueueRemoteDataSource {
                 'appointmentDateTime',
                 isLessThan: Timestamp.fromDate(_endOfToday()),
               )
+              // Only get appointments that are checked into the active queue OR confirmed but not yet in queue
+              // But we can only query easily by one thing, so let's get all confirmed/completed/pending
+              // and let the cubit filter them into the two sections (Confirmed vs Active Queue).
               .orderBy('appointmentDateTime')
-              .orderBy('queueNumber')
+              // Firestore complex index might not like orderBy queueNumber if it has nulls, so let's handle sorting locally for now or just order by appointmentDateTime
               .get();
 
-      return snapshot.docs
-          .map((doc) => QueueEntryModel.fromMap(doc.data(), doc.id))
+      final list = snapshot.docs
+          .map((doc) => AppointmentModel.fromMap(doc.data()))
           .toList();
+      
+      // Local sort: queueNumber ascending (nulls at the end)
+      list.sort((a, b) {
+        if (a.queueNumber == null && b.queueNumber == null) return 0;
+        if (a.queueNumber == null) return 1;
+        if (b.queueNumber == null) return -1;
+        return a.queueNumber!.compareTo(b.queueNumber!);
+      });
+
+      return list;
     } on FirebaseException catch (e) {
       throw ServerException(FirebaseErrorMapper.getMessage(e));
     } catch (e) {
@@ -58,7 +72,7 @@ class QueueRemoteDataSourceImpl implements QueueRemoteDataSource {
   }
 
   @override
-  Stream<QueueEntryModel?> watchPatientQueueEntry({required String patientId}) {
+  Stream<AppointmentModel?> watchPatientQueueEntry({required String patientId}) {
     // Only looking at today's active appointments
     return firestore
         .collection('appointments')
@@ -71,17 +85,63 @@ class QueueRemoteDataSourceImpl implements QueueRemoteDataSource {
           'appointmentDateTime',
           isLessThan: Timestamp.fromDate(_endOfToday()),
         )
-        .where('status', isEqualTo: ['confirmed']) // Ensure it's active
+        // Patient screen shows info if confirmed OR if already in queue
+        .where('status', whereIn: ['confirmed', 'pending'])
         .orderBy('appointmentDateTime')
         .limit(1)
         .snapshots()
         .map((snapshot) {
           if (snapshot.docs.isEmpty) return null;
-          return QueueEntryModel.fromMap(
-            snapshot.docs.first.data(),
-            snapshot.docs.first.id,
-          );
+          return AppointmentModel.fromMap(snapshot.docs.first.data());
         });
+  }
+
+  @override
+  Future<void> checkInPatient({required String appointmentId, required String department}) async {
+    try {
+      // Use a transaction or count to generate sequential queueNumber
+      // Not using snapshot directly since we just need the count, but keeping the await for the execution.
+      await firestore
+          .collection('appointments')
+          .where('department', isEqualTo: department)
+          .where(
+            'appointmentDateTime',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(_startOfToday()),
+          )
+          .where(
+            'appointmentDateTime',
+            isLessThan: Timestamp.fromDate(_endOfToday()),
+          )
+          .count()
+          .get();
+      
+      // Wait, we only want to count the ones that ACTUALLY have a queue number for today.
+      final queueCountSnapshot = await firestore
+          .collection('appointments')
+          .where('department', isEqualTo: department)
+          .where(
+            'appointmentDateTime',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(_startOfToday()),
+          )
+          .where(
+            'appointmentDateTime',
+            isLessThan: Timestamp.fromDate(_endOfToday()),
+          )
+          .where('queueStatus', whereIn: ['waiting', 'called', 'served', 'no_show'])
+          .count()
+          .get();
+
+      final int queueNumber = (queueCountSnapshot.count ?? 0) + 1;
+
+      await firestore.collection('appointments').doc(appointmentId).update({
+        'queueNumber': queueNumber,
+        'queueStatus': 'waiting',
+      });
+    } on FirebaseException catch (e) {
+      throw ServerException(FirebaseErrorMapper.getMessage(e));
+    } catch (e) {
+      throw const ServerException('Failed to add patient to queue');
+    }
   }
 
   @override
@@ -109,11 +169,8 @@ class QueueRemoteDataSourceImpl implements QueueRemoteDataSource {
       if (snapshot.docs.isNotEmpty) {
         final docId = snapshot.docs.first.id;
         await firestore.collection('appointments').doc(docId).update({
-          'queueStatus':
-              'in_progress', // 'in_progress' translates to 'called' logic in entity sometimes, using in_progress based on UI
+          'queueStatus': 'called', 
           'calledAt': Timestamp.fromDate(DateTime.now()),
-          'status':
-              'confirmed', //? Ensure the appointment is marked confirmed if it was pending
         });
       }
     } on FirebaseException catch (e) {
@@ -124,17 +181,17 @@ class QueueRemoteDataSourceImpl implements QueueRemoteDataSource {
   }
 
   @override
-  Future<void> markDone({required String queueEntryId}) async {
+  Future<void> markServed({required String queueEntryId}) async {
     try {
       await firestore.collection('appointments').doc(queueEntryId).update({
-        'queueStatus': 'completed',
+        'queueStatus': 'served',
         'status': 'completed',
         'servedAt': Timestamp.fromDate(DateTime.now()),
       });
     } on FirebaseException catch (e) {
       throw ServerException(FirebaseErrorMapper.getMessage(e));
     } catch (e) {
-      throw const ServerException('Failed to mark patient as done');
+      throw const ServerException('Failed to mark patient as served');
     }
   }
 

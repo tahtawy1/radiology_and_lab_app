@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../domain/entities/queue_entry_entity.dart';
-import 'cubit/queue_patient_cubit.dart';
+
+import 'package:radiology_and_lab_app/features/appointment/domain/entites/appointment_entity.dart';
+import '../../cubit/queue_patient_cubit.dart';
+import '../../cubit/queue_patient_state.dart';
 
 class QueuePatientView extends StatefulWidget {
   const QueuePatientView({super.key});
@@ -66,6 +67,12 @@ class _QueuePatientViewState extends State<QueuePatientView> {
             if (state.queueEntry == null) {
                return const Center(child: Text('You have no active queues today.'));
             }
+            
+            // Check if patient is medically approved but NOT checked-in physically yet
+            if (state.queueEntry!.status.name == 'confirmed' && state.queueEntry!.queueStatus == null) {
+               return _buildPreCheckInState(state.queueEntry!);
+            }
+
             return _buildContent(state.queueEntry!, state.patientsAhead);
           }
 
@@ -75,7 +82,53 @@ class _QueuePatientViewState extends State<QueuePatientView> {
     );
   }
 
-  Widget _buildContent(QueueEntryEntity entry, int ahead) {
+  Widget _buildPreCheckInState(AppointmentEntity entry) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.domain_verification, size: 80, color: Color(0xFF0F766E)),
+            const SizedBox(height: 24),
+            const Text(
+              'Medically Approved',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Your appointment is confirmed. Please proceed to the hospital reception to physically check-in and receive your queue number.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16, color: Colors.black54, height: 1.5),
+            ),
+            const SizedBox(height: 32),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline, color: Colors.blue),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Department: ${entry.department}\nTest: ${entry.testType}',
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                  )
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent(AppointmentEntity entry, int ahead) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -95,7 +148,7 @@ class _QueuePatientViewState extends State<QueuePatientView> {
     );
   }
 
-  Widget _buildLiveQueueCircle(QueueEntryEntity entry) {
+  Widget _buildLiveQueueCircle(AppointmentEntity entry) {
     return Container(
       width: 250,
       height: 250,
@@ -104,23 +157,23 @@ class _QueuePatientViewState extends State<QueuePatientView> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F766E).withOpacity(0.05),
+            color: const Color(0xFF0F766E).withValues(alpha: 0.05),
             blurRadius: 30,
             spreadRadius: 20,
           )
         ],
-        border: Border.all(color: const Color(0xFF0F766E).withOpacity(0.1), width: 2),
+        border: Border.all(color: const Color(0xFF0F766E).withValues(alpha: 0.1), width: 2),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Text('LIVE QUEUE', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1.5)),
           Text(
-            '#${entry.queueNumber}',
+            '#${entry.queueNumber ?? '?'}',
             style: const TextStyle(fontSize: 70, fontWeight: FontWeight.w900, color: Color(0xFF111827), height: 1.2),
           ),
           Text(
-            entry.queueStatus == 'in_progress' ? 'It\'s your turn!' : 'Waiting',
+            entry.queueStatus?.name == 'called' ? 'It\'s your turn!' : 'Waiting',
             style: const TextStyle(color: Color(0xFF0F766E), fontWeight: FontWeight.bold, fontSize: 16),
           ),
           const SizedBox(height: 12),
@@ -130,9 +183,9 @@ class _QueuePatientViewState extends State<QueuePatientView> {
               color: const Color(0xFF111827),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Text(
-              entry.roomNumber.isNotEmpty ? 'ROOM ${entry.roomNumber}' : 'WAITING AREA',
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+            child: const Text(
+              'WAITING AREA',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
             ),
           )
         ],
@@ -140,7 +193,7 @@ class _QueuePatientViewState extends State<QueuePatientView> {
     );
   }
 
-  Widget _buildInfoCards(QueueEntryEntity entry, int ahead) {
+  Widget _buildInfoCards(AppointmentEntity entry, int ahead) {
     return Column(
       children: [
         _buildCard(
@@ -170,7 +223,7 @@ class _QueuePatientViewState extends State<QueuePatientView> {
           trailing: Container(
              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
              decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(8)),
-             child: Text(entry.queueStatus.toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey.shade700)),
+             child: Text((entry.queueStatus?.name ?? 'WAITING').toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey.shade700)),
           ),
         ),
       ],
@@ -191,7 +244,7 @@ class _QueuePatientViewState extends State<QueuePatientView> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 2)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 2)),
         ],
       ),
       child: Row(
@@ -238,7 +291,7 @@ class _QueuePatientViewState extends State<QueuePatientView> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 2)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 2)),
         ],
       ),
       child: Row(
@@ -250,7 +303,8 @@ class _QueuePatientViewState extends State<QueuePatientView> {
             onChanged: (val) {
               setState(() => _notifyEnabled = val);
             },
-            activeColor: const Color(0xFF0F766E),
+            activeTrackColor: const Color(0xFF0F766E).withValues(alpha: 0.5),
+            activeThumbColor: const Color(0xFF0F766E),
           )
         ],
       ),
