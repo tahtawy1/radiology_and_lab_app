@@ -1,0 +1,133 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:radiology_and_lab_app/core/constants/app_colors.dart';
+import 'package:radiology_and_lab_app/features/appointment/domain/entites/appointment_enums.dart';
+import 'package:radiology_and_lab_app/features/appointment/presentation/cubit/appointment_cubit.dart';
+import 'package:radiology_and_lab_app/features/appointment/presentation/cubit/appointment_state.dart';
+
+import '../shared/dashboard_card.dart';
+
+/// Patient statistics: Total Appointments, Pending Requests,
+/// Completed Results, Upcoming count.
+class PatientStatisticsSection extends StatelessWidget {
+  const PatientStatisticsSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<AppointmentCubit, AppointmentState>(
+      builder: (context, state) {
+        int total = 0;
+        int pending = 0;
+        int completed = 0;
+        int upcoming = 0;
+
+        if (state is AppointmentsLoaded) {
+          final all = state.appointments;
+          total = all.length;
+          pending = all.where((a) => a.status == AppointmentStatus.pending).length;
+          completed = all.where((a) => a.status == AppointmentStatus.confirmed).length;
+          upcoming = all
+              .where((a) =>
+                  (a.status == AppointmentStatus.pending ||
+                      a.status == AppointmentStatus.confirmed) &&
+                  !a.appointmentDateTime.isBefore(DateTime.now()))
+              .length;
+        }
+
+        return GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 1.55,
+          children: [
+            _StatCard(
+              label: 'Total Appointments',
+              value: total.toString(),
+              icon: Icons.calendar_month_outlined,
+              iconColor: AppColors.primaryDark,
+              iconBg: const Color(0xFFE6FAF8),
+            ),
+            _StatCard(
+              label: 'Pending Requests',
+              value: pending.toString(),
+              icon: Icons.pending_actions_outlined,
+              iconColor: Colors.orange,
+              iconBg: Colors.orange.shade50,
+            ),
+            _StatCard(
+              label: 'Completed Results',
+              value: completed.toString(),
+              icon: Icons.check_circle_outline,
+              iconColor: AppColors.successGreen,
+              iconBg: AppColors.successGreen.withValues(alpha: 0.1),
+            ),
+            _StatCard(
+              label: 'Upcoming',
+              value: upcoming.toString(),
+              icon: Icons.upcoming_outlined,
+              iconColor: Colors.blue,
+              iconBg: Colors.blue.shade50,
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color iconColor;
+  final Color iconBg;
+
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.iconColor,
+    required this.iconBg,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DashboardCard(
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: iconBg,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 18),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

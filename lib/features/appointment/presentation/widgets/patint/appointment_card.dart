@@ -38,9 +38,7 @@ class AppointmentCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Coloured left accent bar
               Container(width: 4, color: accentColor),
-              // Card content
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(14),
@@ -168,7 +166,11 @@ class AppointmentCard extends StatelessWidget {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.info_outline, size: 14, color: Colors.orange.shade700),
+                                      Icon(
+                                        Icons.info_outline,
+                                        size: 14,
+                                        color: Colors.orange.shade700,
+                                      ),
                                       const SizedBox(width: 6),
                                       Text(
                                         'Waiting doctor approval',
@@ -202,17 +204,25 @@ class AppointmentCard extends StatelessWidget {
                                 AppointmentStatus.confirmed) {
                               if (appointment.queueStatus == null) {
                                 return Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
                                   width: double.infinity,
                                   decoration: BoxDecoration(
                                     color: Colors.blue.shade50,
                                     borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: Colors.blue.shade100),
+                                    border: Border.all(
+                                      color: Colors.blue.shade100,
+                                    ),
                                   ),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.hourglass_empty, size: 16, color: Colors.blue.shade700),
+                                      Icon(
+                                        Icons.hourglass_empty,
+                                        size: 16,
+                                        color: Colors.blue.shade700,
+                                      ),
                                       const SizedBox(width: 8),
                                       Text(
                                         'Medically Approved - Awaiting Queue',
@@ -229,7 +239,9 @@ class AppointmentCard extends StatelessWidget {
                                   width: double.infinity,
                                   child: ElevatedButton.icon(
                                     onPressed: () {
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
                                         const SnackBar(
                                           content: Text(
                                             'Navigating to Queue Status...',

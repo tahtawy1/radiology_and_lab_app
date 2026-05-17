@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -25,8 +24,8 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _emailController = TextEditingController(text: 'aarr882002@gmail.com');
+  final _passwordController = TextEditingController(text: 'Ahmed@882005');
   String _selectedRole = 'Patient';
 
   @override
@@ -59,13 +58,7 @@ class _LoginPageState extends State<LoginPage> {
           if (state is Authenticated) {
             AppSnackBar.showSuccess(context, 'Login Successful');
             final role = state.user.role.toLowerCase();
-            if (role == 'admin') {
-              // context.go(AppStrings.adminHomeRoute);
-            } else if (role == 'doctor') {
-              context.go(AppStrings.doctorApprovalRoute);
-            } else {
-              context.go(AppStrings.queuePatientRoute);
-            }
+            context.go(AppStrings.dashboardRoute, extra: state.user);
           } else if (state is AuthError) {
             AppSnackBar.showError(context, state.message);
           }

@@ -1,7 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:radiology_and_lab_app/core/constants/app_strings.dart';
 import 'package:radiology_and_lab_app/core/di/injection_container.dart';
+import 'package:radiology_and_lab_app/features/auth/domain/entities/user_entity.dart';
 import 'package:radiology_and_lab_app/features/auth/domain/usecases/get_current_user_usecase.dart';
 import 'package:radiology_and_lab_app/features/auth/domain/usecases/sign_in_usecase.dart';
 import 'package:radiology_and_lab_app/features/auth/domain/usecases/sign_out_usecase.dart';
@@ -19,90 +21,100 @@ import 'package:radiology_and_lab_app/features/queue/presentation/pages/admin/qu
 import 'package:radiology_and_lab_app/features/queue/presentation/cubit/queue_admin_cubit.dart';
 import 'package:radiology_and_lab_app/features/queue/presentation/pages/patient/queue_patient_screen.dart';
 import 'package:radiology_and_lab_app/features/queue/presentation/cubit/queue_patient_cubit.dart';
+import 'package:radiology_and_lab_app/features/dashboard/presentation/pages/main_dashboard_screen.dart';
+import 'package:radiology_and_lab_app/features/dashboard/presentation/pages/doctor/doctor_notifications_screen.dart';
+AuthCubit _buildAuthCubit() => AuthCubit(
+      signInUseCase: getIt<SignInUseCase>(),
+      signUpUseCase: getIt<SignUpUseCase>(),
+      signOutUseCase: getIt<SignOutUseCase>(),
+      getCurrentUserUseCase: getIt<GetCurrentUserUseCase>(),
+    );
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: AppStrings.loginRoute,
+  initialLocation: AppStrings.splashRoute,
   routes: [
+    // ── Splash ────────────────────────────────────────────────────────────────
     GoRoute(
       path: AppStrings.splashRoute,
-      builder:
-          (_, _) => BlocProvider<SplashCubit>(
-            create: (context) => SplashCubit()..splashTimer(),
-            child: const SplashView(),
-          ),
+      builder: (_, __) => BlocProvider<SplashCubit>(
+        create: (_) => SplashCubit()..splashTimer(),
+        child: const SplashView(),
+      ),
     ),
+
+    // ── Auth ──────────────────────────────────────────────────────────────────
     GoRoute(
       path: AppStrings.loginRoute,
-      builder:
-          (_, _) => BlocProvider<AuthCubit>(
-            create:
-                (context) => AuthCubit(
-                  signInUseCase: getIt<SignInUseCase>(),
-                  signUpUseCase: getIt<SignUpUseCase>(),
-                  signOutUseCase: getIt<SignOutUseCase>(),
-                  getCurrentUserUseCase: getIt<GetCurrentUserUseCase>(),
-                ),
-            child: const LoginPage(),
-          ),
+      builder: (_, __) => BlocProvider<AuthCubit>(
+        create: (_) => _buildAuthCubit(),
+        child: const LoginPage(),
+      ),
     ),
     GoRoute(
       path: AppStrings.registerRoute,
-      builder:
-          (_, _) => BlocProvider<AuthCubit>(
-            create:
-                (context) => AuthCubit(
-                  signInUseCase: getIt<SignInUseCase>(),
-                  signUpUseCase: getIt<SignUpUseCase>(),
-                  signOutUseCase: getIt<SignOutUseCase>(),
-                  getCurrentUserUseCase: getIt<GetCurrentUserUseCase>(),
-                ),
-            child: const RegisterPage(),
-          ),
+      builder: (_, __) => BlocProvider<AuthCubit>(
+        create: (_) => _buildAuthCubit(),
+        child: const RegisterPage(),
+      ),
     ),
-    // GoRoute(
-    //   path: AppStrings.homeRoute,
-    // builder: (_) => const _PlaceholderScreen(label: 'Home'),
-    // ),
+
+    // ── Dashboard (role-aware entry point) ────────────────────────────────────
+    GoRoute(
+      path: AppStrings.dashboardRoute,
+      builder: (_, state) {
+        // Fallback for direct navigation without user extra
+        if (state.extra == null) {
+          return const Scaffold(
+            body: Center(child: Text('Error: No user session found. Please login again.')),
+          );
+        }
+        final user = state.extra as UserEntity;
+        return BlocProvider<AuthCubit>(
+          create: (_) => _buildAuthCubit(),
+          child: MainDashboardScreen(user: user),
+        );
+      },
+    ),
+
+    // ── Standalone routes (deep-link / backward-compat) ───────────────────────
     GoRoute(
       path: AppStrings.bookAppointmentRoute,
-      builder:
-          (_, _) => BlocProvider<AppointmentCubit>(
-            create: (context) => getIt<AppointmentCubit>(),
-            child: const BookAppointmentScreen(),
-          ),
+      builder: (_, __) => BlocProvider<AppointmentCubit>(
+        create: (_) => getIt<AppointmentCubit>(),
+        child: const BookAppointmentScreen(),
+      ),
     ),
     GoRoute(
       path: AppStrings.myAppointmentsRoute,
-      builder:
-          (_, _) => BlocProvider<AppointmentCubit>(
-            create: (context) => getIt<AppointmentCubit>(),
-            child: const MyAppointmentsScreen(),
-          ),
+      builder: (_, __) => BlocProvider<AppointmentCubit>(
+        create: (_) => getIt<AppointmentCubit>(),
+        child: const MyAppointmentsScreen(),
+      ),
     ),
     GoRoute(
       path: AppStrings.doctorApprovalRoute,
-      builder:
-          (_, _) => BlocProvider<AppointmentCubit>(
-            create: (context) => getIt<AppointmentCubit>(),
-            child: const DoctorApprovalScreen(),
-          ),
+      builder: (_, __) => BlocProvider<AppointmentCubit>(
+        create: (_) => getIt<AppointmentCubit>(),
+        child: const DoctorApprovalScreen(),
+      ),
     ),
-
     GoRoute(
       path: AppStrings.queueAdminRoute,
-      builder:
-          (_, _) => BlocProvider<QueueAdminCubit>(
-            create: (context) => getIt<QueueAdminCubit>(),
-            child: const QueueAdminView(),
-          ),
+      builder: (_, __) => BlocProvider<QueueAdminCubit>(
+        create: (_) => getIt<QueueAdminCubit>(),
+        child: const QueueAdminView(),
+      ),
     ),
     GoRoute(
       path: AppStrings.queuePatientRoute,
-      builder:
-          (_, _) => BlocProvider<QueuePatientCubit>(
-            create: (context) => getIt<QueuePatientCubit>(),
-            child: const QueuePatientView(),
-          ),
+      builder: (_, __) => BlocProvider<QueuePatientCubit>(
+        create: (_) => getIt<QueuePatientCubit>(),
+        child: const QueuePatientView(),
+      ),
+    ),
+    GoRoute(
+      path: AppStrings.notificationsRoute,
+      builder: (_, __) => const DoctorNotificationsScreen(),
     ),
   ],
 );

@@ -67,7 +67,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final user = UserModel.fromJson(doc.data()!);
 
       // Role validation
-      if (user.role != selectedRole.toLowerCase()) {
+      if (user.role.toLowerCase() != selectedRole.toLowerCase()) {
         await firebaseAuth.signOut();
 
         throw const AuthException('Selected role does not match your account');
