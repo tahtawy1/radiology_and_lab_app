@@ -9,7 +9,7 @@ class ResultsRepositoryImpl implements ResultsRepository {
   ResultsRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<void> uploadResult({
+  Future<String> uploadResult({
     required String appointmentId,
     required String resultFileUrl,
     required String notes,
@@ -22,7 +22,7 @@ class ResultsRepositoryImpl implements ResultsRepository {
   }
 
   @override
-  Future<void> reviewResult({
+  Future<String> reviewResult({
     required String resultId,
     required String doctorId,
     required String doctorNotes,

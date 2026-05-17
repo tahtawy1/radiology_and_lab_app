@@ -2,13 +2,13 @@ import '../../domain/entites/result_entity.dart';
 import '../../../appointment/domain/entites/appointment_entity.dart';
 
 abstract class ResultsRepository {
-  Future<void> uploadResult({
+  Future<String> uploadResult({
     required String appointmentId,
     required String resultFileUrl,
     required String notes,
   });
 
-  Future<void> reviewResult({
+  Future<String> reviewResult({
     required String resultId,
     required String doctorId,
     required String doctorNotes,

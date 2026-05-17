@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../domain/entities/user_entity.dart';
@@ -11,6 +13,7 @@ class UserModel extends UserEntity {
     required super.phone,
     required super.role,
     super.createdAt,
+    super.fcmToken,
   });
 
   factory UserModel.fromFirebaseUser(User user, {required String role}) {
@@ -34,6 +37,7 @@ class UserModel extends UserEntity {
       phone: json['phone'] ?? '',
       role: json['role'] ?? 'patient',
       createdAt: json['createdAt']?.toDate(),
+      fcmToken: json['fcmToken'] ?? '',
     );
   }
 
@@ -46,6 +50,7 @@ class UserModel extends UserEntity {
       'phone': phone,
       'role': role,
       'createdAt': createdAt,
+      'fcmToken': fcmToken,
     };
   }
 
@@ -58,6 +63,7 @@ class UserModel extends UserEntity {
       phone: phone,
       role: role,
       createdAt: createdAt,
+      fcmToken: fcmToken,
     );
   }
 }

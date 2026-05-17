@@ -5,7 +5,7 @@ class CallNextPatientUseCase {
 
   CallNextPatientUseCase({required this.repository});
 
-  Future<void> call({required String department}) {
+  Future<String?> call({required String department}) {
     return repository.callNextPatient(department: department);
   }
 }

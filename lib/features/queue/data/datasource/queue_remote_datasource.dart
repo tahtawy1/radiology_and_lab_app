@@ -11,7 +11,7 @@ abstract class QueueRemoteDataSource {
     required String appointmentId,
     required String department,
   });
-  Future<void> callNextPatient({required String department});
+  Future<String?> callNextPatient({required String department});
   Future<void> markServed({required String appointmentId});
   Future<void> markNoShow({required String appointmentId});
   Future<int> getPatientsAhead({
@@ -160,7 +160,7 @@ class QueueRemoteDataSourceImpl implements QueueRemoteDataSource {
   }
 
   @override
-  Future<void> callNextPatient({required String department}) async {
+  Future<String?> callNextPatient({required String department}) async {
     try {
       final snapshot =
           await firestore
@@ -180,13 +180,17 @@ class QueueRemoteDataSourceImpl implements QueueRemoteDataSource {
               .get();
 
       if (snapshot.docs.isNotEmpty) {
-        final docId = snapshot.docs.first.id;
+        final doc = snapshot.docs.first;
+        final docId = doc.id;
+        final patientId = doc.data()['patientId'] as String?;
         await firestore.collection('appointments').doc(docId).update({
           'queueStatus': 'called',
           'calledAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         });
+        return patientId;
       }
+      return null;
     } on FirebaseException catch (e) {
       throw ServerException(FirebaseErrorMapper.getMessage(e));
     } catch (e) {

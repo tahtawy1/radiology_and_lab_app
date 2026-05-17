@@ -14,7 +14,8 @@ abstract class QueueRepository {
   });
 
   /// Admin: call the next waiting patient (sets queueStatus → called).
-  Future<void> callNextPatient({required String department});
+  /// Returns the patientId of the patient called, or null if queue is empty.
+  Future<String?> callNextPatient({required String department});
 
   /// Admin: mark an entry as served (sets queueStatus → served).
   Future<void> markServed({required String appointmentId});

@@ -27,6 +27,8 @@ import 'package:radiology_and_lab_app/features/results/presentation/pages/patien
 import 'package:radiology_and_lab_app/features/results/presentation/pages/doctor/review_result_screen.dart';
 import 'package:radiology_and_lab_app/features/results/domain/entites/result_entity.dart';
 import 'package:radiology_and_lab_app/features/results/presentation/pages/doctor/doctor_pending_reviews_screen.dart';
+import 'package:radiology_and_lab_app/features/notifications/presentation/pages/notifications_screen.dart';
+import 'package:radiology_and_lab_app/features/notifications/presentation/cubit/notifications_cubit.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: AppStrings.loginRoute,
@@ -173,6 +175,16 @@ final GoRouter appRouter = GoRouter(
           (_, _) => BlocProvider<ResultsCubit>(
             create: (context) => getIt<ResultsCubit>(),
             child: const DoctorPendingReviewsScreen(),
+          ),
+    ),
+
+    // Notifications Feature Route
+    GoRoute(
+      path: AppStrings.notificationsRoute,
+      builder:
+          (_, _) => BlocProvider<NotificationsCubit>(
+            create: (context) => getIt<NotificationsCubit>(),
+            child: const NotificationsScreen(),
           ),
     ),
   ],

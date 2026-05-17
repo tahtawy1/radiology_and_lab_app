@@ -42,9 +42,9 @@ class QueueRepositoryImpl implements QueueRepository {
   }
 
   @override
-  Future<void> callNextPatient({required String department}) async {
+  Future<String?> callNextPatient({required String department}) async {
     try {
-      await remoteDataSource.callNextPatient(department: department);
+      return await remoteDataSource.callNextPatient(department: department);
     } on AppException {
       rethrow;
     }

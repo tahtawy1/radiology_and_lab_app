@@ -5,7 +5,7 @@ class UploadResultUseCase {
 
   UploadResultUseCase(this.repository);
 
-  Future<void> call({
+  Future<String> call({
     required String appointmentId,
     required String resultFileUrl,
     required String notes,

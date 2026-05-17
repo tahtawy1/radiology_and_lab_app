@@ -56,6 +56,15 @@ import '../../features/results/presentation/cubit/results_cubit.dart';
 import 'package:dio/dio.dart';
 import '../../core/services/cloudinary_service.dart';
 
+// Notifications Feature
+import '../../features/notifications/data/datasource/notification_remote_datasource.dart';
+import '../../features/notifications/data/repositories/notification_repository_impl.dart';
+import '../../features/notifications/domain/repositories/notification_repository.dart';
+import '../../features/notifications/domain/usecases/send_notification_usecase.dart';
+import '../../features/notifications/domain/usecases/get_user_notifications_usecase.dart';
+import '../../features/notifications/domain/usecases/mark_notification_as_read_usecase.dart';
+import '../../features/notifications/presentation/cubit/notifications_cubit.dart';
+
 final getIt = GetIt.instance;
 
 Future<void> initGetIt() async {
@@ -126,6 +135,7 @@ Future<void> initGetIt() async {
       getDoctorPendingReviewsUseCase: getIt(),
       getServedPatientsUseCase: getIt(),
       cloudinaryService: getIt(),
+      sendNotificationUseCase: getIt(),
     ),
   );
 
@@ -183,6 +193,7 @@ Future<void> initGetIt() async {
       updateQueueStatusUseCase: getIt(),
       getDoctorsUseCase: getIt(),
       getPendingAppointmentsForDoctorUseCase: getIt(),
+      sendNotificationUseCase: getIt(),
     ),
   );
 
@@ -226,6 +237,7 @@ Future<void> initGetIt() async {
       callNextPatientUseCase: getIt(),
       markQueueServedUseCase: getIt(),
       markQueueNoShowUseCase: getIt(),
+      sendNotificationUseCase: getIt(),
     ),
   );
 
@@ -233,6 +245,32 @@ Future<void> initGetIt() async {
     () => QueuePatientCubit(
       watchPatientQueueEntryUseCase: getIt(),
       getPatientsAheadUseCase: getIt(),
+    ),
+  );
+
+  // ---------------------------------------------------------------------------
+  // Notifications Feature
+  // ---------------------------------------------------------------------------
+  // Data Sources
+  getIt.registerLazySingleton<NotificationRemoteDataSource>(
+    () => NotificationRemoteDataSourceImpl(getIt()),
+  );
+
+  // Repositories
+  getIt.registerLazySingleton<NotificationRepository>(
+    () => NotificationRepositoryImpl(getIt()),
+  );
+
+  // Use Cases
+  getIt.registerLazySingleton(() => SendNotificationUseCase(getIt()));
+  getIt.registerLazySingleton(() => GetUserNotificationsUseCase(getIt()));
+  getIt.registerLazySingleton(() => MarkNotificationAsReadUseCase(getIt()));
+
+  // Cubits
+  getIt.registerFactory(
+    () => NotificationsCubit(
+      getUserNotificationsUseCase: getIt(),
+      markNotificationAsReadUseCase: getIt(),
     ),
   );
 }

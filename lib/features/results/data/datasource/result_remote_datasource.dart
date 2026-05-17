@@ -6,13 +6,13 @@ import '../../../../core/errors/firebase_error_mapper.dart';
 import '../models/result_model.dart';
 
 abstract class ResultRemoteDataSource {
-  Future<void> uploadResult({
+  Future<String> uploadResult({
     required String appointmentId,
     required String resultFileUrl,
     required String notes,
   });
 
-  Future<void> reviewResult({
+  Future<String> reviewResult({
     required String resultId,
     required String doctorId,
     required String doctorNotes,
@@ -32,7 +32,7 @@ class ResultRemoteDataSourceImpl implements ResultRemoteDataSource {
   ResultRemoteDataSourceImpl(this._firestore);
 
   @override
-  Future<void> uploadResult({
+  Future<String> uploadResult({
     required String appointmentId,
     required String resultFileUrl,
     required String notes,
@@ -82,6 +82,8 @@ class ResultRemoteDataSourceImpl implements ResultRemoteDataSource {
           'updatedAt': FieldValue.serverTimestamp(),
         });
       });
+
+      return doctorId;
     } on FirebaseException catch (e) {
       throw ServerException(FirebaseErrorMapper.getMessage(e));
     } catch (e) {
@@ -92,7 +94,7 @@ class ResultRemoteDataSourceImpl implements ResultRemoteDataSource {
   }
 
   @override
-  Future<void> reviewResult({
+  Future<String> reviewResult({
     required String resultId,
     required String doctorId,
     required String doctorNotes,
@@ -102,13 +104,14 @@ class ResultRemoteDataSourceImpl implements ResultRemoteDataSource {
       final resultRef = _firestore.collection('results').doc(resultId);
       final doctorDocRef = _firestore.collection('users').doc(doctorId);
 
-      await _firestore.runTransaction((transaction) async {
+      final result = await _firestore.runTransaction((transaction) async {
         final resultDoc = await transaction.get(resultRef);
         if (!resultDoc.exists) {
           throw const ServerException('Result not found');
         }
 
         final appointmentId = resultDoc.data()?['appointmentId'];
+        final patientId = resultDoc.data()?['patientId'];
         final doctorDoc = await transaction.get(doctorDocRef);
         final doctorName = doctorDoc.data()?['fullName'] ?? 'Unknown Doctor';
 
@@ -126,7 +129,9 @@ class ResultRemoteDataSourceImpl implements ResultRemoteDataSource {
           _firestore.collection('appointments').doc(appointmentId),
           {'status': 'completed', 'updatedAt': FieldValue.serverTimestamp()},
         );
+        return patientId as String;
       });
+      return result;
     } on FirebaseException catch (e) {
       throw ServerException(FirebaseErrorMapper.getMessage(e));
     } catch (e) {

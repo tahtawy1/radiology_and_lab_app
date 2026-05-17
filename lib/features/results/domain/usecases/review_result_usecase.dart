@@ -5,7 +5,7 @@ class ReviewResultUseCase {
 
   ReviewResultUseCase(this.repository);
 
-  Future<void> call({
+  Future<String> call({
     required String resultId,
     required String doctorId,
     required String doctorNotes,

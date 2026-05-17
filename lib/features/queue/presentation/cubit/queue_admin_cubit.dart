@@ -7,6 +7,8 @@ import '../../domain/usecases/call_next_patient_usecase.dart';
 import '../../domain/usecases/mark_queue_served_usecase.dart';
 import '../../domain/usecases/mark_queue_no_show_usecase.dart';
 import '../../../../core/errors/firebase_error_mapper.dart';
+import '../../../../features/notifications/domain/entites/notification_entity.dart';
+import '../../../../features/notifications/domain/usecases/send_notification_usecase.dart';
 import 'queue_admin_state.dart';
 
 class QueueAdminCubit extends Cubit<QueueAdminState> {
@@ -15,6 +17,7 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
   final CallNextPatientUseCase callNextPatientUseCase;
   final MarkQueueServedUseCase markQueueServedUseCase;
   final MarkQueueNoShowUseCase markQueueNoShowUseCase;
+  final SendNotificationUseCase sendNotificationUseCase;
 
   QueueAdminCubit({
     required this.getTodayQueueUseCase,
@@ -22,6 +25,7 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
     required this.callNextPatientUseCase,
     required this.markQueueServedUseCase,
     required this.markQueueNoShowUseCase,
+    required this.sendNotificationUseCase,
   }) : super(QueueAdminInitial());
 
   // ── Error Message mapper ───────────────────────────────────────────────────
@@ -68,10 +72,24 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
     }
   }
 
-  // ── Call Next Patient ──────────────────────────────────────────────────────
+  // ── Call Next Patient ─────────────────────────────────────────────────────
   Future<void> callNextPatient({required String department}) async {
     try {
-      await callNextPatientUseCase(department: department);
+      final patientId = await callNextPatientUseCase(department: department);
+      // ── Notify the called patient ─────────────────────────────────
+      if (patientId != null && patientId.isNotEmpty) {
+        await sendNotificationUseCase(
+          NotificationEntity(
+            id: '',
+            userId: patientId,
+            title: 'Queue Update',
+            body: 'It is now your turn. Please proceed to the department.',
+            type: NotificationType.queueCalled,
+            isRead: false,
+            createdAt: DateTime.now(),
+          ),
+        );
+      }
       emit(QueueAdminActionSuccess('Next patient called'));
       await fetchQueue(department: department);
     } catch (e) {

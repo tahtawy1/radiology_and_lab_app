@@ -60,11 +60,11 @@ class _LoginPageState extends State<LoginPage> {
             AppSnackBar.showSuccess(context, 'Login Successful');
             final role = state.user.role.toLowerCase();
             if (role == 'admin') {
-              context.push(AppStrings.servedPatientsResultsRoute);
+              context.pushReplacement(AppStrings.notificationsRoute);
             } else if (role == 'doctor') {
-              context.push(AppStrings.doctorPendingReviewsRoute);
+              context.pushReplacement(AppStrings.notificationsRoute);
             } else {
-              context.push(AppStrings.patientResultsRoute);
+              context.pushReplacement(AppStrings.notificationsRoute);
             }
           } else if (state is AuthError) {
             AppSnackBar.showError(context, state.message);

@@ -13,6 +13,8 @@ import 'package:radiology_and_lab_app/features/appointment/domain/usecases/get_p
 import 'package:radiology_and_lab_app/features/appointment/domain/usecases/update_appointment_status_usecase.dart';
 import 'package:radiology_and_lab_app/features/appointment/domain/usecases/update_queue_status_usecase.dart';
 import '../../../../core/errors/firebase_error_mapper.dart';
+import '../../../../features/notifications/domain/entites/notification_entity.dart';
+import '../../../../features/notifications/domain/usecases/send_notification_usecase.dart';
 import 'appointment_state.dart';
 
 class AppointmentCubit extends Cubit<AppointmentState> {
@@ -25,6 +27,7 @@ class AppointmentCubit extends Cubit<AppointmentState> {
   final GetDoctorsUseCase getDoctorsUseCase;
   final GetPendingAppointmentsForDoctorUseCase
   getPendingAppointmentsForDoctorUseCase;
+  final SendNotificationUseCase sendNotificationUseCase;
 
   AppointmentCubit({
     required this.bookAppointmentUseCase,
@@ -35,6 +38,7 @@ class AppointmentCubit extends Cubit<AppointmentState> {
     required this.updateQueueStatusUseCase,
     required this.getDoctorsUseCase,
     required this.getPendingAppointmentsForDoctorUseCase,
+    required this.sendNotificationUseCase,
   }) : super(AppointmentInitial());
 
   // ── Error Message mapper ───────────────────────────────────────────────────
@@ -47,6 +51,20 @@ class AppointmentCubit extends Cubit<AppointmentState> {
     emit(AppointmentLoading());
     try {
       await bookAppointmentUseCase(appointment);
+      // ── Notify doctor ──────────────────────────────────────────────────
+      if (appointment.doctorId.isNotEmpty) {
+        await sendNotificationUseCase(
+          NotificationEntity(
+            id: '',
+            userId: appointment.doctorId,
+            title: 'New Appointment Request',
+            body: 'A new patient appointment request requires review.',
+            type: NotificationType.newAppointmentRequest,
+            isRead: false,
+            createdAt: DateTime.now(),
+          ),
+        );
+      }
       emit(AppointmentBookedSuccess());
     } catch (e) {
       emit(AppointmentError(_mapExceptionToMessage(e)));
@@ -78,12 +96,27 @@ class AppointmentCubit extends Cubit<AppointmentState> {
   }
 
   // ── Approve Appointment ────────────────────────────────────────────────────
-  Future<void> approveAppointment(String appointmentId) async {
+  Future<void> approveAppointment(
+    String appointmentId, {
+    required String patientId,
+  }) async {
     emit(AppointmentLoading());
     try {
       await updateAppointmentStatusUseCase(
         appointmentId: appointmentId,
         status: AppointmentStatus.confirmed,
+      );
+      // ── Notify patient ──────────────────────────────────────────────────
+      await sendNotificationUseCase(
+        NotificationEntity(
+          id: '',
+          userId: patientId,
+          title: 'Appointment Approved',
+          body: 'Your appointment has been approved successfully.',
+          type: NotificationType.appointmentApproved,
+          isRead: false,
+          createdAt: DateTime.now(),
+        ),
       );
       emit(AppointmentStatusUpdatedSuccess());
     } catch (e) {
@@ -92,12 +125,27 @@ class AppointmentCubit extends Cubit<AppointmentState> {
   }
 
   // ── Reject Appointment ─────────────────────────────────────────────────────
-  Future<void> rejectAppointment(String appointmentId) async {
+  Future<void> rejectAppointment(
+    String appointmentId, {
+    required String patientId,
+  }) async {
     emit(AppointmentLoading());
     try {
       await updateAppointmentStatusUseCase(
         appointmentId: appointmentId,
         status: AppointmentStatus.cancelled,
+      );
+      // ── Notify patient ──────────────────────────────────────────────────
+      await sendNotificationUseCase(
+        NotificationEntity(
+          id: '',
+          userId: patientId,
+          title: 'Appointment Rejected',
+          body: 'Unfortunately, your appointment request was not approved.',
+          type: NotificationType.appointmentRejected,
+          isRead: false,
+          createdAt: DateTime.now(),
+        ),
       );
       emit(AppointmentStatusUpdatedSuccess());
     } catch (e) {
