@@ -263,6 +263,13 @@ class _AdminShell extends StatelessWidget {
           create: (_) => getIt<AppointmentCubit>(),
         ),
         BlocProvider<ResultsCubit>(create: (_) => getIt<ResultsCubit>()),
+        // NotificationsCubit is required by DashboardHeader (bell icon)
+        BlocProvider<NotificationsCubit>(
+          create:
+              (_) =>
+                  getIt<NotificationsCubit>()
+                    ..listenToNotifications(user.id, user.role.toLowerCase()),
+        ),
       ],
       child: _AdminScaffold(user: user),
     );
@@ -600,9 +607,9 @@ class _ProfileTab extends StatelessWidget {
       width: double.infinity,
       height: 52,
       child: OutlinedButton.icon(
-        onPressed: () {
-          context.read<AuthCubit>().signOut();
-          context.go(AppStrings.loginRoute);
+        onPressed: () async {
+          await context.read<AuthCubit>().signOut();
+          if (context.mounted) context.go(AppStrings.loginRoute);
         },
         icon: const Icon(Icons.logout, color: AppColors.errorRed),
         label: const Text(

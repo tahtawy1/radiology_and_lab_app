@@ -116,7 +116,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SectionTitle(title: 'Phone Number'),
                   CustomTextField(
                     controller: _phoneController,
-                    hint: 'Enter 11-digit phone number',
+                    hint: 'e.g. 01012345678',
                     icon: Icons.phone_outlined,
                     keyboardType: TextInputType.phone,
                     validator: AppValidators.validatePhone,

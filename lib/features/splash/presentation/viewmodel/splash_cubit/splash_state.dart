@@ -9,4 +9,7 @@ class SplashLoadingState extends SplashState {}
 
 class NavigateToAuth extends SplashState {}
 
-class NavigateToHome extends SplashState {}
+class NavigateToHome extends SplashState {
+  final UserEntity user;
+  NavigateToHome(this.user);
+}

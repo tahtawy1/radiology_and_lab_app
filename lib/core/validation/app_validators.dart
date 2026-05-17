@@ -43,7 +43,7 @@ class AppValidators {
       return 'Phone number is required';
     }
     if (!value.isValidPhone) {
-      return 'Please enter a valid 11-digit phone number';
+      return 'Please enter a valid Egyptian phone number (010, 011, 012, or 015 followed by 8 digits)';
     }
     return null;
   }

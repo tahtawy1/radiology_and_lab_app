@@ -13,9 +13,11 @@ class SplashView extends StatelessWidget {
     return BlocListener<SplashCubit, SplashState>(
       listener: (context, state) {
         if (state is NavigateToAuth) {
+          // No active session — go to login
           context.go(AppStrings.loginRoute);
         } else if (state is NavigateToHome) {
-          //! Here home view
+          // Session restored — navigate directly to the role-correct dashboard
+          context.go(AppStrings.dashboardRoute, extra: state.user);
         }
       },
       child: const Scaffold(body: SplashBody()),

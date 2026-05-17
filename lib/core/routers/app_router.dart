@@ -70,15 +70,35 @@ final GoRouter appRouter = GoRouter(
           ),
     ),
 
-    // ── Dashboard (role-aware entry point) ────────────────────────────────────
+    // ── Dashboard (role-aware entry point) ───────────────────────────────────
     GoRoute(
       path: AppStrings.dashboardRoute,
-      builder: (_, state) {
-        // Fallback for direct navigation without user extra
-        if (state.extra == null) {
-          return const Scaffold(
+      builder: (context, state) {
+        if (state.extra == null || state.extra is! UserEntity) {
+          // Session missing — redirect the user back to login safely
+          return Scaffold(
             body: Center(
-              child: Text('Error: No user session found. Please login again.'),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.lock_outline, size: 64, color: Colors.grey),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Session expired.',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Please sign in again.',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton(
+                    onPressed: () => context.go(AppStrings.loginRoute),
+                    child: const Text('Go to Login'),
+                  ),
+                ],
+              ),
             ),
           );
         }

@@ -66,20 +66,27 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       final user = UserModel.fromJson(doc.data()!);
 
-      // Role validation
+      // Role validation — sign out immediately to prevent session leakage
       if (user.role.toLowerCase() != selectedRole.toLowerCase()) {
         await firebaseAuth.signOut();
-
-        throw const AuthException('Selected role does not match your account');
+        final actualRole = _capitalise(user.role);
+        throw AuthException(
+          'This account is registered as $actualRole. '
+          'Please use the $actualRole portal to sign in.',
+        );
       }
+
       UserSessionService.currentUser = user;
       return user;
     } on FirebaseAuthException catch (e) {
       throw AuthException(FirebaseErrorMapper.getMessage(e));
     } on FirebaseException catch (e) {
       throw ServerException(e.message ?? 'Database error occurred');
+    } on AppException {
+      // Let role-mismatch and other domain exceptions propagate unchanged
+      rethrow;
     } catch (e) {
-      throw const ServerException('Something went wrong');
+      throw const ServerException('Something went wrong. Please try again.');
     }
   }
 
@@ -128,7 +135,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw const AuthException('Failed to create user account');
       }
 
-      final token = await FirebaseMessaging.instance.getToken();
+      String? token;
+      try {
+        token = await FirebaseMessaging.instance.getToken();
+      } catch (e) {
+        // FCM token generation might fail on unsupported platforms (like Web without SW) or when permissions are blocked
+        print('FCM token generation failed: $e');
+      }
+
       // Create user model
       final userModel = UserModel(
         id: userCredential.user!.uid,
@@ -152,10 +166,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw AuthException(FirebaseErrorMapper.getMessage(e));
     } on FirebaseException catch (e) {
       throw ServerException(e.message ?? 'Database error occurred');
-    } on ValidationException {
+    } on AppException {
       rethrow;
     } catch (e) {
-      throw const ServerException('Something went wrong');
+      throw const ServerException('Something went wrong. Please try again.');
     }
   }
 
@@ -182,11 +196,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         return null;
       }
 
-      return UserModel.fromJson(doc.data()!);
+      final model = UserModel.fromJson(doc.data()!);
+      // Restore in-memory session so the rest of the app has a current user
+      UserSessionService.currentUser = model;
+      return model;
     } on FirebaseException catch (e) {
       throw ServerException(e.message ?? 'Failed to fetch current user');
     } catch (e) {
-      throw const ServerException('Something went wrong');
+      throw const ServerException('Something went wrong. Please try again.');
     }
   }
 
@@ -199,5 +216,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } catch (e) {
       throw const ServerException('Failed to reset password');
     }
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  String _capitalise(String value) {
+    if (value.isEmpty) return value;
+    return value[0].toUpperCase() + value.substring(1).toLowerCase();
   }
 }
