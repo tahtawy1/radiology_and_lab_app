@@ -6,6 +6,9 @@ import '../../domain/usecases/check_in_patient_usecase.dart';
 import '../../domain/usecases/call_next_patient_usecase.dart';
 import '../../domain/usecases/mark_queue_served_usecase.dart';
 import '../../domain/usecases/mark_queue_no_show_usecase.dart';
+import '../../../../core/errors/firebase_error_mapper.dart';
+import '../../../../features/notifications/domain/entites/notification_entity.dart';
+import '../../../../features/notifications/domain/usecases/send_notification_usecase.dart';
 import 'queue_admin_state.dart';
 
 class QueueAdminCubit extends Cubit<QueueAdminState> {
@@ -14,6 +17,7 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
   final CallNextPatientUseCase callNextPatientUseCase;
   final MarkQueueServedUseCase markQueueServedUseCase;
   final MarkQueueNoShowUseCase markQueueNoShowUseCase;
+  final SendNotificationUseCase sendNotificationUseCase;
 
   QueueAdminCubit({
     required this.getTodayQueueUseCase,
@@ -21,22 +25,24 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
     required this.callNextPatientUseCase,
     required this.markQueueServedUseCase,
     required this.markQueueNoShowUseCase,
+    required this.sendNotificationUseCase,
   }) : super(QueueAdminInitial());
 
-  Failure _mapExceptionToFailure(dynamic e) {
-    if (e is ValidationException) return ValidationFailure(e.message);
-    if (e is NetworkException) return NetworkFailure(e.message);
-    if (e is ServerException) return ServerFailure(e.message);
-    return ServerFailure(e.toString());
+  // ── Error Message mapper ───────────────────────────────────────────────────
+  String _mapExceptionToMessage(dynamic e) {
+    return FirebaseErrorMapper.getMessage(e);
   }
 
+  // ── Fetch Queue ────────────────────────────────────────────────────────────
   Future<void> fetchQueue({required String department}) async {
     emit(QueueAdminLoading());
     try {
       final entries = await getTodayQueueUseCase(department: department);
       final totalToday = entries.length;
-      final called = entries.where((e) => e.queueStatus?.name == 'called').length;
-      final served = entries.where((e) => e.queueStatus?.name == 'served').length;
+      final called =
+          entries.where((e) => e.queueStatus?.name == 'called').length;
+      final served =
+          entries.where((e) => e.queueStatus?.name == 'served').length;
 
       emit(QueueAdminLoaded(
         queueEntries: entries,
@@ -45,47 +51,77 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
         served: served,
       ));
     } catch (e) {
-      emit(QueueAdminError(_mapExceptionToFailure(e).message));
+      emit(QueueAdminError(_mapExceptionToMessage(e)));
     }
   }
 
-  Future<void> checkInPatient({required String appointmentId, required String department}) async {
+  // ── Check In Patient ───────────────────────────────────────────────────────
+  Future<void> checkInPatient({
+    required String appointmentId,
+    required String department,
+  }) async {
     try {
-      await checkInPatientUseCase(appointmentId: appointmentId, department: department);
+      await checkInPatientUseCase(
+        appointmentId: appointmentId,
+        department: department,
+      );
       emit(QueueAdminActionSuccess('Patient checked in successfully'));
       await fetchQueue(department: department);
     } catch (e) {
-      emit(QueueAdminError(_mapExceptionToFailure(e).message));
+      emit(QueueAdminError(_mapExceptionToMessage(e)));
     }
   }
 
+  // ── Call Next Patient ─────────────────────────────────────────────────────
   Future<void> callNextPatient({required String department}) async {
     try {
-      await callNextPatientUseCase(department: department);
+      final patientId = await callNextPatientUseCase(department: department);
+      // ── Notify the called patient ─────────────────────────────────
+      if (patientId != null && patientId.isNotEmpty) {
+        await sendNotificationUseCase(
+          NotificationEntity(
+            id: '',
+            userId: patientId,
+            title: 'Queue Update',
+            body: 'It is now your turn. Please proceed to the department.',
+            type: NotificationType.queueCalled,
+            isRead: false,
+            createdAt: DateTime.now(),
+          ),
+        );
+      }
       emit(QueueAdminActionSuccess('Next patient called'));
       await fetchQueue(department: department);
     } catch (e) {
-      emit(QueueAdminError(_mapExceptionToFailure(e).message));
+      emit(QueueAdminError(_mapExceptionToMessage(e)));
     }
   }
 
-  Future<void> markServed({required String appointmentId, required String department}) async {
+  // ── Mark Served ────────────────────────────────────────────────────────────
+  Future<void> markServed({
+    required String appointmentId,
+    required String department,
+  }) async {
     try {
       await markQueueServedUseCase(appointmentId: appointmentId);
       emit(QueueAdminActionSuccess('Patient marked as served'));
       await fetchQueue(department: department);
     } catch (e) {
-      emit(QueueAdminError(_mapExceptionToFailure(e).message));
+      emit(QueueAdminError(_mapExceptionToMessage(e)));
     }
   }
 
-  Future<void> markNoShow({required String appointmentId, required String department}) async {
+  // ── Mark No Show ───────────────────────────────────────────────────────────
+  Future<void> markNoShow({
+    required String appointmentId,
+    required String department,
+  }) async {
     try {
       await markQueueNoShowUseCase(appointmentId: appointmentId);
       emit(QueueAdminActionSuccess('Patient marked as no-show'));
       await fetchQueue(department: department);
     } catch (e) {
-      emit(QueueAdminError(_mapExceptionToFailure(e).message));
+      emit(QueueAdminError(_mapExceptionToMessage(e)));
     }
   }
 }

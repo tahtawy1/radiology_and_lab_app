@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:radiology_and_lab_app/core/constants/app_strings.dart';
+import 'package:radiology_and_lab_app/core/services/user_session_service.dart';
 import 'package:radiology_and_lab_app/features/appointment/domain/entites/appointment_entity.dart';
 import 'package:radiology_and_lab_app/features/appointment/domain/entites/appointment_enums.dart';
 import 'package:radiology_and_lab_app/features/appointment/presentation/cubit/appointment_cubit.dart';
@@ -97,7 +98,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
     final appointment = AppointmentEntity(
       id: '',
       patientId: user.uid,
-      patientName: user.displayName ?? 'Patient',
+      patientName: UserSessionService.currentUser?.fullName ?? user.displayName ?? 'Patient',
       department: _selectedDepartment,
       testType: _selectedTestType!,
       appointmentDateTime: appointmentDate,

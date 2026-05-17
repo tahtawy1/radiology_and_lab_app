@@ -30,11 +30,14 @@ class _DoctorApprovalScreenState extends State<DoctorApprovalScreen> {
     }
   }
 
-  void _onApprove(String appointmentId) {
-    context.read<AppointmentCubit>().approveAppointment(appointmentId);
+  void _onApprove(String appointmentId, String patientId) {
+    context.read<AppointmentCubit>().approveAppointment(
+      appointmentId,
+      patientId: patientId,
+    );
   }
 
-  void _onReject(String appointmentId) {
+  void _onReject(String appointmentId, String patientId) {
     showDialog(
       context: context,
       builder:
@@ -53,6 +56,7 @@ class _DoctorApprovalScreenState extends State<DoctorApprovalScreen> {
                   dialogContext.pop();
                   context.read<AppointmentCubit>().rejectAppointment(
                     appointmentId,
+                    patientId: patientId,
                   );
                 },
                 child: const Text(
@@ -106,11 +110,19 @@ class _DoctorApprovalScreenState extends State<DoctorApprovalScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.inbox_rounded, size: 80, color: Colors.grey.shade300),
+                    Icon(
+                      Icons.inbox_rounded,
+                      size: 80,
+                      color: Colors.grey.shade300,
+                    ),
                     const SizedBox(height: 16),
                     const Text(
                       'No pending approvals',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black54),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black54,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     const Text(
@@ -129,8 +141,8 @@ class _DoctorApprovalScreenState extends State<DoctorApprovalScreen> {
                 final appointment = appointments[index];
                 return DoctorApprovalCard(
                   appointment: appointment,
-                  onApprove: () => _onApprove(appointment.id),
-                  onReject: () => _onReject(appointment.id),
+                  onApprove: () => _onApprove(appointment.id, appointment.patientId),
+                  onReject: () => _onReject(appointment.id, appointment.patientId),
                 );
               },
             );

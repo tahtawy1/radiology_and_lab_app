@@ -12,6 +12,9 @@ import 'package:radiology_and_lab_app/features/appointment/domain/usecases/get_p
 import 'package:radiology_and_lab_app/features/appointment/domain/usecases/get_pending_appointments_for_doctor_usecase.dart';
 import 'package:radiology_and_lab_app/features/appointment/domain/usecases/update_appointment_status_usecase.dart';
 import 'package:radiology_and_lab_app/features/appointment/domain/usecases/update_queue_status_usecase.dart';
+import '../../../../core/errors/firebase_error_mapper.dart';
+import '../../../../features/notifications/domain/entites/notification_entity.dart';
+import '../../../../features/notifications/domain/usecases/send_notification_usecase.dart';
 import 'appointment_state.dart';
 
 class AppointmentCubit extends Cubit<AppointmentState> {
@@ -22,7 +25,9 @@ class AppointmentCubit extends Cubit<AppointmentState> {
   final UpdateAppointmentStatusUseCase updateAppointmentStatusUseCase;
   final UpdateQueueStatusUseCase updateQueueStatusUseCase;
   final GetDoctorsUseCase getDoctorsUseCase;
-  final GetPendingAppointmentsForDoctorUseCase getPendingAppointmentsForDoctorUseCase;
+  final GetPendingAppointmentsForDoctorUseCase
+  getPendingAppointmentsForDoctorUseCase;
+  final SendNotificationUseCase sendNotificationUseCase;
 
   AppointmentCubit({
     required this.bookAppointmentUseCase,
@@ -33,14 +38,12 @@ class AppointmentCubit extends Cubit<AppointmentState> {
     required this.updateQueueStatusUseCase,
     required this.getDoctorsUseCase,
     required this.getPendingAppointmentsForDoctorUseCase,
+    required this.sendNotificationUseCase,
   }) : super(AppointmentInitial());
 
-  // ── Failure mapper ─────────────────────────────────────────────────────────
-  Failure _mapExceptionToFailure(dynamic e) {
-    if (e is ValidationException) return ValidationFailure(e.message);
-    if (e is NetworkException) return NetworkFailure(e.message);
-    if (e is ServerException) return ServerFailure(e.message);
-    return ServerFailure(e.toString());
+  // ── Error Message mapper ───────────────────────────────────────────────────
+  String _mapExceptionToMessage(dynamic e) {
+    return FirebaseErrorMapper.getMessage(e);
   }
 
   // ── Book Appointment ───────────────────────────────────────────────────────
@@ -48,9 +51,23 @@ class AppointmentCubit extends Cubit<AppointmentState> {
     emit(AppointmentLoading());
     try {
       await bookAppointmentUseCase(appointment);
+      // ── Notify doctor ──────────────────────────────────────────────────
+      if (appointment.doctorId.isNotEmpty) {
+        await sendNotificationUseCase(
+          NotificationEntity(
+            id: '',
+            userId: appointment.doctorId,
+            title: 'New Appointment Request',
+            body: 'A new patient appointment request requires review.',
+            type: NotificationType.newAppointmentRequest,
+            isRead: false,
+            createdAt: DateTime.now(),
+          ),
+        );
+      }
       emit(AppointmentBookedSuccess());
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToFailure(e).message));
+      emit(AppointmentError(_mapExceptionToMessage(e)));
     }
   }
 
@@ -61,7 +78,7 @@ class AppointmentCubit extends Cubit<AppointmentState> {
       final appointments = await getPatientAppointmentsUseCase(patientId);
       emit(AppointmentsLoaded(appointments: appointments));
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToFailure(e).message));
+      emit(AppointmentError(_mapExceptionToMessage(e)));
     }
   }
 
@@ -69,38 +86,70 @@ class AppointmentCubit extends Cubit<AppointmentState> {
   Future<void> getPendingAppointmentsForDoctor(String doctorId) async {
     emit(AppointmentLoading());
     try {
-      final appointments = await getPendingAppointmentsForDoctorUseCase(doctorId);
+      final appointments = await getPendingAppointmentsForDoctorUseCase(
+        doctorId,
+      );
       emit(AppointmentsLoaded(appointments: appointments));
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToFailure(e).message));
+      emit(AppointmentError(_mapExceptionToMessage(e)));
     }
   }
 
   // ── Approve Appointment ────────────────────────────────────────────────────
-  Future<void> approveAppointment(String appointmentId) async {
+  Future<void> approveAppointment(
+    String appointmentId, {
+    required String patientId,
+  }) async {
     emit(AppointmentLoading());
     try {
       await updateAppointmentStatusUseCase(
         appointmentId: appointmentId,
         status: AppointmentStatus.confirmed,
       );
+      // ── Notify patient ──────────────────────────────────────────────────
+      await sendNotificationUseCase(
+        NotificationEntity(
+          id: '',
+          userId: patientId,
+          title: 'Appointment Approved',
+          body: 'Your appointment has been approved successfully.',
+          type: NotificationType.appointmentApproved,
+          isRead: false,
+          createdAt: DateTime.now(),
+        ),
+      );
       emit(AppointmentStatusUpdatedSuccess());
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToFailure(e).message));
+      emit(AppointmentError(_mapExceptionToMessage(e)));
     }
   }
 
   // ── Reject Appointment ─────────────────────────────────────────────────────
-  Future<void> rejectAppointment(String appointmentId) async {
+  Future<void> rejectAppointment(
+    String appointmentId, {
+    required String patientId,
+  }) async {
     emit(AppointmentLoading());
     try {
       await updateAppointmentStatusUseCase(
         appointmentId: appointmentId,
         status: AppointmentStatus.cancelled,
       );
+      // ── Notify patient ──────────────────────────────────────────────────
+      await sendNotificationUseCase(
+        NotificationEntity(
+          id: '',
+          userId: patientId,
+          title: 'Appointment Rejected',
+          body: 'Unfortunately, your appointment request was not approved.',
+          type: NotificationType.appointmentRejected,
+          isRead: false,
+          createdAt: DateTime.now(),
+        ),
+      );
       emit(AppointmentStatusUpdatedSuccess());
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToFailure(e).message));
+      emit(AppointmentError(_mapExceptionToMessage(e)));
     }
   }
 
@@ -111,7 +160,7 @@ class AppointmentCubit extends Cubit<AppointmentState> {
       final appointments = await getAllAppointmentsUseCase();
       emit(AppointmentsLoaded(appointments: appointments));
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToFailure(e).message));
+      emit(AppointmentError(_mapExceptionToMessage(e)));
     }
   }
 
@@ -122,7 +171,7 @@ class AppointmentCubit extends Cubit<AppointmentState> {
       await cancelAppointmentUseCase(appointmentId);
       emit(AppointmentCancelledSuccess());
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToFailure(e).message));
+      emit(AppointmentError(_mapExceptionToMessage(e)));
     }
   }
 
@@ -139,7 +188,7 @@ class AppointmentCubit extends Cubit<AppointmentState> {
       );
       emit(AppointmentStatusUpdatedSuccess());
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToFailure(e).message));
+      emit(AppointmentError(_mapExceptionToMessage(e)));
     }
   }
 
@@ -150,7 +199,7 @@ class AppointmentCubit extends Cubit<AppointmentState> {
       final doctors = await getDoctorsUseCase();
       emit(DoctorsLoaded(doctors));
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToFailure(e).message));
+      emit(AppointmentError(_mapExceptionToMessage(e)));
     }
   }
 
@@ -165,9 +214,11 @@ class AppointmentCubit extends Cubit<AppointmentState> {
         appointmentId: appointmentId,
         status: status,
       );
-      emit(AppointmentStatusUpdatedSuccess()); // Reuse same success state for simplicity
+      emit(
+        AppointmentStatusUpdatedSuccess(),
+      ); // Reuse same success state for simplicity
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToFailure(e).message));
+      emit(AppointmentError(_mapExceptionToMessage(e)));
     }
   }
 }

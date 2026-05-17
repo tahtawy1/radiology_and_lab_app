@@ -23,12 +23,22 @@ import 'package:radiology_and_lab_app/features/queue/presentation/pages/patient/
 import 'package:radiology_and_lab_app/features/queue/presentation/cubit/queue_patient_cubit.dart';
 import 'package:radiology_and_lab_app/features/dashboard/presentation/pages/main_dashboard_screen.dart';
 import 'package:radiology_and_lab_app/features/dashboard/presentation/pages/doctor/doctor_notifications_screen.dart';
+import 'package:radiology_and_lab_app/features/results/presentation/cubit/results_cubit.dart';
+import 'package:radiology_and_lab_app/features/results/presentation/pages/admin/upload_result_screen.dart';
+import 'package:radiology_and_lab_app/features/results/presentation/pages/admin/served_patients_results_screen.dart';
+import 'package:radiology_and_lab_app/features/results/presentation/pages/patient/patient_results_screen.dart';
+import 'package:radiology_and_lab_app/features/results/presentation/pages/doctor/review_result_screen.dart';
+import 'package:radiology_and_lab_app/features/results/domain/entites/result_entity.dart';
+import 'package:radiology_and_lab_app/features/results/presentation/pages/doctor/doctor_pending_reviews_screen.dart';
+import 'package:radiology_and_lab_app/features/notifications/presentation/pages/notifications_screen.dart';
+import 'package:radiology_and_lab_app/features/notifications/presentation/cubit/notifications_cubit.dart';
+
 AuthCubit _buildAuthCubit() => AuthCubit(
-      signInUseCase: getIt<SignInUseCase>(),
-      signUpUseCase: getIt<SignUpUseCase>(),
-      signOutUseCase: getIt<SignOutUseCase>(),
-      getCurrentUserUseCase: getIt<GetCurrentUserUseCase>(),
-    );
+  signInUseCase: getIt<SignInUseCase>(),
+  signUpUseCase: getIt<SignUpUseCase>(),
+  signOutUseCase: getIt<SignOutUseCase>(),
+  getCurrentUserUseCase: getIt<GetCurrentUserUseCase>(),
+);
 
 final GoRouter appRouter = GoRouter(
   initialLocation: AppStrings.splashRoute,
@@ -36,26 +46,29 @@ final GoRouter appRouter = GoRouter(
     // ── Splash ────────────────────────────────────────────────────────────────
     GoRoute(
       path: AppStrings.splashRoute,
-      builder: (_, __) => BlocProvider<SplashCubit>(
-        create: (_) => SplashCubit()..splashTimer(),
-        child: const SplashView(),
-      ),
+      builder:
+          (_, __) => BlocProvider<SplashCubit>(
+            create: (_) => SplashCubit()..splashTimer(),
+            child: const SplashView(),
+          ),
     ),
 
     // ── Auth ──────────────────────────────────────────────────────────────────
     GoRoute(
       path: AppStrings.loginRoute,
-      builder: (_, __) => BlocProvider<AuthCubit>(
-        create: (_) => _buildAuthCubit(),
-        child: const LoginPage(),
-      ),
+      builder:
+          (_, __) => BlocProvider<AuthCubit>(
+            create: (_) => _buildAuthCubit(),
+            child: const LoginPage(),
+          ),
     ),
     GoRoute(
       path: AppStrings.registerRoute,
-      builder: (_, __) => BlocProvider<AuthCubit>(
-        create: (_) => _buildAuthCubit(),
-        child: const RegisterPage(),
-      ),
+      builder:
+          (_, __) => BlocProvider<AuthCubit>(
+            create: (_) => _buildAuthCubit(),
+            child: const RegisterPage(),
+          ),
     ),
 
     // ── Dashboard (role-aware entry point) ────────────────────────────────────
@@ -65,7 +78,9 @@ final GoRouter appRouter = GoRouter(
         // Fallback for direct navigation without user extra
         if (state.extra == null) {
           return const Scaffold(
-            body: Center(child: Text('Error: No user session found. Please login again.')),
+            body: Center(
+              child: Text('Error: No user session found. Please login again.'),
+            ),
           );
         }
         final user = state.extra as UserEntity;
@@ -79,42 +94,120 @@ final GoRouter appRouter = GoRouter(
     // ── Standalone routes (deep-link / backward-compat) ───────────────────────
     GoRoute(
       path: AppStrings.bookAppointmentRoute,
-      builder: (_, __) => BlocProvider<AppointmentCubit>(
-        create: (_) => getIt<AppointmentCubit>(),
-        child: const BookAppointmentScreen(),
-      ),
+      builder:
+          (_, __) => BlocProvider<AppointmentCubit>(
+            create: (_) => getIt<AppointmentCubit>(),
+            child: const BookAppointmentScreen(),
+          ),
     ),
     GoRoute(
       path: AppStrings.myAppointmentsRoute,
-      builder: (_, __) => BlocProvider<AppointmentCubit>(
-        create: (_) => getIt<AppointmentCubit>(),
-        child: const MyAppointmentsScreen(),
-      ),
+      builder:
+          (_, __) => BlocProvider<AppointmentCubit>(
+            create: (_) => getIt<AppointmentCubit>(),
+            child: const MyAppointmentsScreen(),
+          ),
     ),
     GoRoute(
       path: AppStrings.doctorApprovalRoute,
-      builder: (_, __) => BlocProvider<AppointmentCubit>(
-        create: (_) => getIt<AppointmentCubit>(),
-        child: const DoctorApprovalScreen(),
-      ),
+      builder:
+          (_, __) => BlocProvider<AppointmentCubit>(
+            create: (_) => getIt<AppointmentCubit>(),
+            child: const DoctorApprovalScreen(),
+          ),
     ),
     GoRoute(
       path: AppStrings.queueAdminRoute,
-      builder: (_, __) => BlocProvider<QueueAdminCubit>(
-        create: (_) => getIt<QueueAdminCubit>(),
-        child: const QueueAdminView(),
-      ),
+      builder:
+          (_, __) => BlocProvider<QueueAdminCubit>(
+            create: (_) => getIt<QueueAdminCubit>(),
+            child: const QueueAdminView(),
+          ),
     ),
     GoRoute(
       path: AppStrings.queuePatientRoute,
-      builder: (_, __) => BlocProvider<QueuePatientCubit>(
-        create: (_) => getIt<QueuePatientCubit>(),
-        child: const QueuePatientView(),
-      ),
+      builder:
+          (_, __) => BlocProvider<QueuePatientCubit>(
+            create: (_) => getIt<QueuePatientCubit>(),
+            child: const QueuePatientView(),
+          ),
     ),
     GoRoute(
       path: AppStrings.notificationsRoute,
       builder: (_, __) => const DoctorNotificationsScreen(),
+    ),
+
+    // Results Feature Routes
+    GoRoute(
+      path: AppStrings.uploadResultRoute,
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+
+        if (extra == null) {
+          return const Scaffold(
+            body: Center(child: Text('No upload data found')),
+          );
+        }
+
+        return BlocProvider<ResultsCubit>(
+          create: (context) => getIt<ResultsCubit>(),
+          child: UploadResultScreen(
+            appointmentId: extra['appointmentId'],
+            patientName: extra['patientName'],
+            testType: extra['testType'],
+          ),
+        );
+      },
+    ),
+
+    GoRoute(
+      path: AppStrings.servedPatientsResultsRoute,
+      builder:
+          (_, _) => BlocProvider<ResultsCubit>(
+            create: (context) => getIt<ResultsCubit>(),
+            child: const ServedPatientsResultsScreen(),
+          ),
+    ),
+
+    GoRoute(
+      path: AppStrings.patientResultsRoute,
+      builder:
+          (_, _) => BlocProvider<ResultsCubit>(
+            create: (context) => getIt<ResultsCubit>(),
+            child: const PatientResultsScreen(),
+          ),
+    ),
+    GoRoute(
+      path: AppStrings.reviewResultRoute,
+      builder: (context, state) {
+        final result = state.extra;
+
+        if (result == null || result is! ResultEntity) {
+          return const Scaffold(body: Center(child: Text('Result not found')));
+        }
+        return BlocProvider<ResultsCubit>(
+          create: (context) => getIt<ResultsCubit>(),
+          child: ReviewResultScreen(result: result),
+        );
+      },
+    ),
+    GoRoute(
+      path: AppStrings.doctorPendingReviewsRoute,
+      builder:
+          (_, _) => BlocProvider<ResultsCubit>(
+            create: (context) => getIt<ResultsCubit>(),
+            child: const DoctorPendingReviewsScreen(),
+          ),
+    ),
+
+    // Notifications Feature Route
+    GoRoute(
+      path: AppStrings.notificationsRoute,
+      builder:
+          (_, _) => BlocProvider<NotificationsCubit>(
+            create: (context) => getIt<NotificationsCubit>(),
+            child: const NotificationsScreen(),
+          ),
     ),
   ],
 );

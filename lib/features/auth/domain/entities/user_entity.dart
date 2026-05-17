@@ -6,6 +6,7 @@ class UserEntity {
   final String phone;
   final String role;
   final DateTime? createdAt;
+  final String? fcmToken;
 
   const UserEntity({
     required this.id,
@@ -15,5 +16,6 @@ class UserEntity {
     required this.phone,
     required this.role,
     this.createdAt,
+    this.fcmToken,
   });
 }

@@ -1,11 +1,11 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:radiology_and_lab_app/core/services/user_session_service.dart';
 
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/firebase_error_mapper.dart';
 import '../models/user_model.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 abstract class AuthRemoteDataSource {
   Future<UserModel> signIn({
@@ -72,14 +72,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
         throw const AuthException('Selected role does not match your account');
       }
-
+      UserSessionService.currentUser = user;
       return user;
     } on FirebaseAuthException catch (e) {
       throw AuthException(FirebaseErrorMapper.getMessage(e));
     } on FirebaseException catch (e) {
       throw ServerException(e.message ?? 'Database error occurred');
     } catch (e) {
-      log(e.toString());
       throw const ServerException('Something went wrong');
     }
   }
@@ -129,6 +128,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw const AuthException('Failed to create user account');
       }
 
+      final token = await FirebaseMessaging.instance.getToken();
       // Create user model
       final userModel = UserModel(
         id: userCredential.user!.uid,
@@ -138,6 +138,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         phone: phone,
         role: 'patient',
         createdAt: DateTime.now(),
+        fcmToken: token,
       );
 
       // Save user in Firestore
@@ -161,6 +162,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> signOut() async {
     try {
+      UserSessionService.currentUser = null;
       await firebaseAuth.signOut();
     } on FirebaseAuthException catch (e) {
       throw AuthException(FirebaseErrorMapper.getMessage(e));
