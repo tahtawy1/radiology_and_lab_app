@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:radiology_and_lab_app/core/constants/app_colors.dart';
+import 'package:radiology_and_lab_app/core/constants/app_strings.dart';
 import 'package:radiology_and_lab_app/features/auth/presentation/widgets/custom_text_field.dart';
 import 'package:radiology_and_lab_app/features/auth/presentation/widgets/loading_button.dart';
 import 'package:radiology_and_lab_app/features/auth/presentation/widgets/password_field.dart';
@@ -75,7 +76,7 @@ class _RegisterPageState extends State<RegisterPage> {
         listener: (context, state) {
           if (state is Authenticated) {
             AppSnackBar.showSuccess(context, 'Registration Successful');
-            context.go('/patient_home');
+            context.go(AppStrings.dashboardRoute, extra: state.user);
           } else if (state is AuthError) {
             AppSnackBar.showError(context, state.message);
           }
@@ -115,7 +116,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SectionTitle(title: 'Phone Number'),
                   CustomTextField(
                     controller: _phoneController,
-                    hint: '+20 100 123 4567',
+                    hint: 'Enter 11-digit phone number',
                     icon: Icons.phone_outlined,
                     keyboardType: TextInputType.phone,
                     validator: AppValidators.validatePhone,
@@ -170,7 +171,9 @@ class _RegisterPageState extends State<RegisterPage> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.primaryLight.withValues(alpha: 0.05),
-        border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: AppColors.primaryLight.withValues(alpha: 0.3),
+        ),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(

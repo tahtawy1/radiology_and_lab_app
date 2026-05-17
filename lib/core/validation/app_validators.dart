@@ -43,7 +43,7 @@ class AppValidators {
       return 'Phone number is required';
     }
     if (!value.isValidPhone) {
-      return 'Please enter a valid phone number';
+      return 'Please enter a valid 11-digit phone number';
     }
     return null;
   }
