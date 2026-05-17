@@ -11,11 +11,7 @@ plugins {
 android {
     namespace = "com.example.radiology_and_lab_app"
     compileSdk = flutter.compileSdkVersion
-<<<<<<< HEAD
     ndkVersion = flutter.ndkVersion
-=======
-    ndkVersion = "29.0.13113456"
->>>>>>> auth_clean_architecture
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
