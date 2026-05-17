@@ -9,11 +9,11 @@ class QueueRepositoryImpl implements QueueRepository {
   QueueRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<List<AppointmentEntity>> getTodayQueue({
+  Stream<List<AppointmentEntity>> getTodayQueue({
     required String department,
-  }) async {
+  }) {
     try {
-      return await remoteDataSource.getTodayQueue(department: department);
+      return remoteDataSource.getTodayQueue(department: department);
     } on AppException {
       rethrow;
     }

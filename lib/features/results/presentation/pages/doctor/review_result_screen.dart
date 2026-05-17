@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:radiology_and_lab_app/core/services/result_file_handler_service.dart';
 import 'package:radiology_and_lab_app/features/results/domain/entites/result_entity.dart';
 import 'package:radiology_and_lab_app/features/results/presentation/cubit/results_cubit.dart';
 import 'package:radiology_and_lab_app/features/results/presentation/cubit/results_state.dart';
@@ -177,12 +177,12 @@ class _ReviewResultScreenState extends State<ReviewResultScreen> {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: Colors.red.shade50,
+                        color: ResultFileHandlerService.getColorForFile(result.resultFileUrl).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(
-                        Icons.picture_as_pdf,
-                        color: Colors.red,
+                      child: Icon(
+                        ResultFileHandlerService.getIconForFile(result.resultFileUrl),
+                        color: ResultFileHandlerService.getColorForFile(result.resultFileUrl),
                         size: 26,
                       ),
                     ),
@@ -216,16 +216,7 @@ class _ReviewResultScreenState extends State<ReviewResultScreen> {
                         Icons.open_in_new,
                         color: Color(0xFF0D9488),
                       ),
-                      onPressed: () async {
-                        final url = Uri.parse(result.resultFileUrl);
-                        if (await canLaunchUrl(url)) {
-                          await launchUrl(url, mode: LaunchMode.externalApplication);
-                        } else {
-                          if (context.mounted) {
-                            AppSnackBar.showError(context, 'Could not open file');
-                          }
-                        }
-                      },
+                      onPressed: () => ResultFileHandlerService.previewFile(context, result.resultFileUrl),
                     ),
                   ],
                 ),

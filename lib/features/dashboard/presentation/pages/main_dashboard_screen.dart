@@ -10,6 +10,7 @@ import 'package:radiology_and_lab_app/features/auth/presentation/cubit/auth_cubi
 import 'package:radiology_and_lab_app/features/appointment/presentation/cubit/appointment_cubit.dart';
 import 'package:radiology_and_lab_app/features/appointment/presentation/pages/patint/my_appointments_screen.dart';
 import 'package:radiology_and_lab_app/features/appointment/presentation/pages/doctor/doctor_approval_screen.dart';
+import 'package:radiology_and_lab_app/features/notifications/presentation/cubit/notifications_state.dart';
 import 'package:radiology_and_lab_app/features/queue/presentation/cubit/queue_admin_cubit.dart';
 import 'package:radiology_and_lab_app/features/queue/presentation/cubit/queue_patient_cubit.dart';
 import 'package:radiology_and_lab_app/features/queue/presentation/pages/admin/queue_admin_screen.dart';
@@ -64,7 +65,10 @@ class _PatientShell extends StatelessWidget {
         ),
         BlocProvider<ResultsCubit>(create: (_) => getIt<ResultsCubit>()),
         BlocProvider<NotificationsCubit>(
-          create: (_) => getIt<NotificationsCubit>(),
+          create:
+              (_) =>
+                  getIt<NotificationsCubit>()
+                    ..listenToNotifications(user.id, user.role.toLowerCase()),
         ),
       ],
       child: _PatientScaffold(user: user),
@@ -156,7 +160,10 @@ class _DoctorShell extends StatelessWidget {
         ),
         BlocProvider<ResultsCubit>(create: (_) => getIt<ResultsCubit>()),
         BlocProvider<NotificationsCubit>(
-          create: (_) => getIt<NotificationsCubit>(),
+          create:
+              (_) =>
+                  getIt<NotificationsCubit>()
+                    ..listenToNotifications(user.id, user.role.toLowerCase()),
         ),
       ],
       child: _DoctorScaffold(user: user),
@@ -221,7 +228,15 @@ class _DoctorScaffold extends StatelessWidget {
           bottomNavigationBar: _AppBottomNav(
             tabs: _tabs,
             currentIndex: currentIndex,
-            onTap: (i) => context.read<NavigationCubit>().goToTab(i),
+            onTap: (i) {
+              context.read<NavigationCubit>().goToTab(i);
+              // Refresh pending approvals when returning to Home (0) or Approvals (2)
+              if (i == 0 || i == 2) {
+                context
+                    .read<AppointmentCubit>()
+                    .getPendingAppointmentsForDoctor(user.id);
+              }
+            },
           ),
         );
       },
@@ -364,14 +379,51 @@ class _AppBottomNav extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        isActive ? tab.activeIcon : tab.icon,
-                        color:
-                            isActive
-                                ? AppColors.primaryDark
-                                : AppColors.textSecondary,
-                        size: 22,
-                      ),
+                      if (tab.label == 'Notifications')
+                        BlocBuilder<NotificationsCubit, NotificationsState>(
+                          builder: (context, state) {
+                            int unreadCount = 0;
+                            if (state is NotificationsLoaded) {
+                              unreadCount = state.unreadCount;
+                            }
+
+                            return Badge(
+                              isLabelVisible: unreadCount > 0,
+                              label: Text(
+                                unreadCount > 99
+                                    ? '99+'
+                                    : unreadCount.toString(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              backgroundColor: Colors.red,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 1,
+                              ),
+                              child: Icon(
+                                isActive ? tab.activeIcon : tab.icon,
+                                color:
+                                    isActive
+                                        ? AppColors.primaryDark
+                                        : AppColors.textSecondary,
+                                size: 22,
+                              ),
+                            );
+                          },
+                        )
+                      else
+                        Icon(
+                          isActive ? tab.activeIcon : tab.icon,
+                          color:
+                              isActive
+                                  ? AppColors.primaryDark
+                                  : AppColors.textSecondary,
+                          size: 22,
+                        ),
                       const SizedBox(height: 3),
                       Text(
                         tab.label,

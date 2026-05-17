@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:radiology_and_lab_app/core/constants/app_colors.dart';
+import 'package:radiology_and_lab_app/core/constants/app_strings.dart';
+import 'package:radiology_and_lab_app/features/notifications/presentation/cubit/notifications_cubit.dart';
+import 'package:radiology_and_lab_app/features/notifications/presentation/cubit/notifications_state.dart';
 
 /// Teal gradient header used at the top of every role dashboard.
 /// Uses the same gradient as the app's splash/auth screens (AppColors).
@@ -84,6 +89,45 @@ class DashboardHeader extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          // ── Notification Bell ──────────────────────────────────────────────────
+          GestureDetector(
+            onTap: () => context.push(AppStrings.notificationsRoute, extra: {'showBackButton': true}),
+            child: BlocBuilder<NotificationsCubit, NotificationsState>(
+              builder: (context, state) {
+                int unreadCount = 0;
+                if (state is NotificationsLoaded) {
+                  unreadCount = state.unreadCount;
+                }
+                return Badge(
+                  isLabelVisible: unreadCount > 0,
+                  label: Text(
+                    unreadCount > 99 ? '99+' : unreadCount.toString(),
+                    style: const TextStyle(
+                      color: AppColors.primaryDark,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  backgroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                  offset: const Offset(5, -5),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: AppColors.glassWhite20,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.notifications_outlined,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                );
+              },
             ),
           ),
           const SizedBox(width: 12),

@@ -7,7 +7,7 @@ class GetPendingAppointmentsForDoctorUseCase {
 
   GetPendingAppointmentsForDoctorUseCase({required this.repository});
 
-  Future<List<AppointmentEntity>> call(String doctorId) async {
-    return await repository.getPendingAppointmentsForDoctor(doctorId);
+  Stream<List<AppointmentEntity>> call(String doctorId) {
+    return repository.getPendingAppointmentsForDoctor(doctorId);
   }
 }

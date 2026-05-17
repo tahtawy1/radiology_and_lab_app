@@ -4,24 +4,24 @@ import '../datasource/notification_remote_datasource.dart';
 import '../models/notification_model.dart';
 
 class NotificationRepositoryImpl implements NotificationRepository {
-  final NotificationRemoteDataSource _dataSource;
+  final NotificationRemoteDataSource remoteDataSource;
 
-  const NotificationRepositoryImpl(this._dataSource);
+  const NotificationRepositoryImpl({required this.remoteDataSource});
 
   @override
   Future<void> sendNotification(NotificationEntity notification) {
-    return _dataSource.createNotification(
+    return remoteDataSource.createNotification(
       NotificationModel.fromEntity(notification),
     );
   }
 
   @override
   Stream<List<NotificationEntity>> getUserNotifications(String userId, String role) {
-    return _dataSource.streamUserNotifications(userId, role);
+    return remoteDataSource.streamUserNotifications(userId, role);
   }
 
   @override
   Future<void> markAsRead(String notificationId) {
-    return _dataSource.markAsRead(notificationId);
+    return remoteDataSource.markAsRead(notificationId);
   }
 }

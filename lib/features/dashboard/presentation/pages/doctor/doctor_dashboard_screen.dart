@@ -71,11 +71,15 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                   DashboardSectionTitle(
                     title: 'Pending Requests',
                     actionLabel: 'See All',
-                    onAction:
-                        () => context.push(
-                          AppStrings.doctorApprovalRoute,
-                          extra: {'showBackButton': true},
-                        ),
+                    onAction: () async {
+                      await context.push(
+                        AppStrings.doctorApprovalRoute,
+                        extra: {'showBackButton': true},
+                      );
+                      if (context.mounted) {
+                        _loadData();
+                      }
+                    },
                   ),
                   const SizedBox(height: 14),
                   const PendingRequestsSection(),

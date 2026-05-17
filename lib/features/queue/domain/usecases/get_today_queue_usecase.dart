@@ -6,7 +6,7 @@ class GetTodayQueueUseCase {
 
   GetTodayQueueUseCase({required this.repository});
 
-  Future<List<AppointmentEntity>> call({required String department}) {
+  Stream<List<AppointmentEntity>> call({required String department}) {
     return repository.getTodayQueue(department: department);
   }
 }

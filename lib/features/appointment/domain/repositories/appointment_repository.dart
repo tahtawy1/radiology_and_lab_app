@@ -8,11 +8,11 @@ abstract class AppointmentRepository {
 
   Future<void> cancelAppointment(String appointmentId);
 
-  Future<List<AppointmentEntity>> getAllAppointments();
+  Stream<List<AppointmentEntity>> getAllAppointments();
 
-  Future<List<AppointmentEntity>> getAppointmentsByPatientId(String patientId);
+  Stream<List<AppointmentEntity>> getAppointmentsByPatientId(String patientId);
 
-  Future<List<AppointmentEntity>> getPendingAppointmentsForDoctor(String doctorId);
+  Stream<List<AppointmentEntity>> getPendingAppointmentsForDoctor(String doctorId);
 
   Future<void> updateAppointmentStatus({
     required String appointmentId,

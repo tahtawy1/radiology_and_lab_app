@@ -11,10 +11,12 @@ class ServedPatientsResultsScreen extends StatefulWidget {
   const ServedPatientsResultsScreen({super.key});
 
   @override
-  State<ServedPatientsResultsScreen> createState() => _ServedPatientsResultsScreenState();
+  State<ServedPatientsResultsScreen> createState() =>
+      _ServedPatientsResultsScreenState();
 }
 
-class _ServedPatientsResultsScreenState extends State<ServedPatientsResultsScreen> {
+class _ServedPatientsResultsScreenState
+    extends State<ServedPatientsResultsScreen> {
   @override
   void initState() {
     super.initState();
@@ -30,10 +32,7 @@ class _ServedPatientsResultsScreenState extends State<ServedPatientsResultsScree
         elevation: 0,
         title: const Text(
           'Served Patients',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
@@ -46,9 +45,7 @@ class _ServedPatientsResultsScreenState extends State<ServedPatientsResultsScree
         builder: (context, state) {
           if (state is ResultsLoading) {
             return const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFF0D9488),
-              ),
+              child: CircularProgressIndicator(color: Color(0xFF0D9488)),
             );
           }
 
@@ -57,7 +54,11 @@ class _ServedPatientsResultsScreenState extends State<ServedPatientsResultsScree
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
+                  const Icon(
+                    Icons.error_outline,
+                    size: 48,
+                    color: Colors.redAccent,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'Error: ${state.message}',
@@ -66,7 +67,8 @@ class _ServedPatientsResultsScreenState extends State<ServedPatientsResultsScree
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () => context.read<ResultsCubit>().getServedPatients(),
+                    onPressed:
+                        () => context.read<ResultsCubit>().getServedPatients(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF0D9488),
                     ),
@@ -85,7 +87,8 @@ class _ServedPatientsResultsScreenState extends State<ServedPatientsResultsScree
             }
 
             return RefreshIndicator(
-              onRefresh: () => context.read<ResultsCubit>().getServedPatients(),
+              onRefresh:
+                  () async => context.read<ResultsCubit>().getServedPatients(),
               color: const Color(0xFF0D9488),
               child: ListView.builder(
                 padding: const EdgeInsets.all(16),

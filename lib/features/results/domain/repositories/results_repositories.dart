@@ -15,9 +15,9 @@ abstract class ResultsRepository {
     required String classification,
   });
 
-  Future<List<ResultEntity>> getPatientResults({required String patientId});
+  Stream<List<ResultEntity>> getPatientResults({required String patientId});
 
-  Future<List<ResultEntity>> getDoctorPendingReviews({required String doctorId});
+  Stream<List<ResultEntity>> getDoctorPendingReviews({required String doctorId});
 
-  Future<List<AppointmentEntity>> getServedPatients();
+  Stream<List<AppointmentEntity>> getServedPatients();
 }

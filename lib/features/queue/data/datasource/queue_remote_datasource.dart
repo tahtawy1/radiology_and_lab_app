@@ -5,7 +5,7 @@ import 'package:radiology_and_lab_app/features/appointment/data/models/appointme
 import 'dart:developer';
 
 abstract class QueueRemoteDataSource {
-  Future<List<AppointmentModel>> getTodayQueue({required String department});
+  Stream<List<AppointmentModel>> getTodayQueue({required String department});
   Stream<AppointmentModel?> watchPatientQueueEntry({required String patientId});
   Future<void> checkInPatient({
     required String appointmentId,
@@ -40,47 +40,47 @@ class QueueRemoteDataSourceImpl implements QueueRemoteDataSource {
   }
 
   @override
-  Future<List<AppointmentModel>> getTodayQueue({
+  Stream<List<AppointmentModel>> getTodayQueue({
     required String department,
-  }) async {
+  }) {
     try {
-      queuePrint('================ GET TODAY QUEUE ================');
+      queuePrint('================ STARTING QUEUE STREAM ================');
       queuePrint('Department: $department');
 
-      final snapshot =
-          await firestore
-              .collection('appointments')
-              .where('department', isEqualTo: department)
-              .where(
-                'appointmentDateTime',
-                isGreaterThanOrEqualTo: Timestamp.fromDate(_startOfToday()),
-              )
-              .where(
-                'appointmentDateTime',
-                isLessThan: Timestamp.fromDate(_endOfToday()),
-              )
-              .get();
+      return firestore
+          .collection('appointments')
+          .where('department', isEqualTo: department)
+          .where(
+            'appointmentDateTime',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(_startOfToday()),
+          )
+          .where(
+            'appointmentDateTime',
+            isLessThan: Timestamp.fromDate(_endOfToday()),
+          )
+          .snapshots()
+          .map((snapshot) {
+            final list =
+                snapshot.docs
+                    .map((doc) => AppointmentModel.fromMap(doc.data()))
+                    .toList();
 
-      final list =
-          snapshot.docs
-              .map((doc) => AppointmentModel.fromMap(doc.data()))
-              .toList();
+            // Local sort to ensure UI consistency: queueNumber ascending (nulls at the end)
+            list.sort((a, b) {
+              if (a.queueNumber == null && b.queueNumber == null) {
+                return a.appointmentDateTime.compareTo(b.appointmentDateTime);
+              }
+              if (a.queueNumber == null) return 1;
+              if (b.queueNumber == null) return -1;
+              return a.queueNumber!.compareTo(b.queueNumber!);
+            });
 
-      // Local sort to ensure UI consistency: queueNumber ascending (nulls at the end)
-      list.sort((a, b) {
-        if (a.queueNumber == null && b.queueNumber == null) {
-          return a.appointmentDateTime.compareTo(b.appointmentDateTime);
-        }
-        if (a.queueNumber == null) return 1;
-        if (b.queueNumber == null) return -1;
-        return a.queueNumber!.compareTo(b.queueNumber!);
-      });
-
-      return list;
+            return list;
+          });
     } on FirebaseException catch (e) {
       throw ServerException(FirebaseErrorMapper.getMessage(e));
     } catch (e) {
-      throw const ServerException('Failed to fetch queue');
+      throw const ServerException('Failed to fetch queue stream');
     }
   }
 

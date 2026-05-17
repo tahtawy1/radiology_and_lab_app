@@ -47,8 +47,24 @@ class _UploadResultScreenState extends State<UploadResultScreen> {
       );
 
       if (result != null) {
+        final fileName = result.files.single.name;
+        final lowerName = fileName.toLowerCase();
+        
+        if (!lowerName.endsWith('.pdf') && 
+            !lowerName.endsWith('.jpg') && 
+            !lowerName.endsWith('.jpeg') && 
+            !lowerName.endsWith('.png')) {
+          if (mounted) {
+            AppSnackBar.showError(
+              context, 
+              'Unsupported file format. Please upload a PDF, JPG, or PNG file.',
+            );
+          }
+          return;
+        }
+
         setState(() {
-          _fileName = result.files.single.name;
+          _fileName = fileName;
           _filePath = result.files.single.path;
         });
       }

@@ -7,13 +7,13 @@ import '../models/appointment_model.dart';
 abstract class AppointmentRemoteDataSource {
   Future<void> bookAppointment(AppointmentModel appointment);
 
-  Future<List<AppointmentModel>> getAppointmentsByPatientId(String patientId);
+  Stream<List<AppointmentModel>> getAppointmentsByPatientId(String patientId);
 
-  Future<List<AppointmentModel>> getPendingAppointmentsForDoctor(
+  Stream<List<AppointmentModel>> getPendingAppointmentsForDoctor(
     String doctorId,
   );
 
-  Future<List<AppointmentModel>> getAllAppointments();
+  Stream<List<AppointmentModel>> getAllAppointments();
 
   Future<void> cancelAppointment(String appointmentId);
 
@@ -69,17 +69,15 @@ class AppointmentRemoteDataSourceImpl implements AppointmentRemoteDataSource {
   }
 
   @override
-  Future<List<AppointmentModel>> getAllAppointments() async {
+  Stream<List<AppointmentModel>> getAllAppointments() {
     try {
-      final snapshot =
-          await firestore
-              .collection('appointments')
-              .orderBy('createdAt', descending: true)
-              .get();
-
-      return snapshot.docs
-          .map((doc) => AppointmentModel.fromMap(doc.data()))
-          .toList();
+      return firestore
+          .collection('appointments')
+          .orderBy('createdAt', descending: true)
+          .snapshots()
+          .map((snapshot) => snapshot.docs
+              .map((doc) => AppointmentModel.fromMap(doc.data()))
+              .toList());
     } on FirebaseException catch (e) {
       throw ServerException(FirebaseErrorMapper.getMessage(e));
     } catch (e) {
@@ -88,21 +86,19 @@ class AppointmentRemoteDataSourceImpl implements AppointmentRemoteDataSource {
   }
 
   @override
-  Future<List<AppointmentModel>> getAppointmentsByPatientId(
+  Stream<List<AppointmentModel>> getAppointmentsByPatientId(
     String patientId,
-  ) async {
+  ) {
     try {
       // Requires Firestore Index: patientId (ASC) + appointmentDateTime (ASC)
-      final snapshot =
-          await firestore
-              .collection('appointments')
-              .where('patientId', isEqualTo: patientId)
-              .orderBy('appointmentDateTime', descending: false)
-              .get();
-
-      return snapshot.docs
-          .map((doc) => AppointmentModel.fromMap(doc.data()))
-          .toList();
+      return firestore
+          .collection('appointments')
+          .where('patientId', isEqualTo: patientId)
+          .orderBy('appointmentDateTime', descending: false)
+          .snapshots()
+          .map((snapshot) => snapshot.docs
+              .map((doc) => AppointmentModel.fromMap(doc.data()))
+              .toList());
     } on FirebaseException catch (e) {
       throw ServerException(FirebaseErrorMapper.getMessage(e));
     } catch (e) {
@@ -111,21 +107,19 @@ class AppointmentRemoteDataSourceImpl implements AppointmentRemoteDataSource {
   }
 
   @override
-  Future<List<AppointmentModel>> getPendingAppointmentsForDoctor(
+  Stream<List<AppointmentModel>> getPendingAppointmentsForDoctor(
     String doctorId,
-  ) async {
+  ) {
     try {
-      final snapshot =
-          await firestore
-              .collection('appointments')
-              .where('doctorId', isEqualTo: doctorId)
-              .where('status', isEqualTo: 'pending')
-              .orderBy('appointmentDateTime', descending: false)
-              .get();
-
-      return snapshot.docs
-          .map((doc) => AppointmentModel.fromMap(doc.data()))
-          .toList();
+      return firestore
+          .collection('appointments')
+          .where('doctorId', isEqualTo: doctorId)
+          .where('status', isEqualTo: 'pending')
+          .orderBy('appointmentDateTime', descending: false)
+          .snapshots()
+          .map((snapshot) => snapshot.docs
+              .map((doc) => AppointmentModel.fromMap(doc.data()))
+              .toList());
     } on FirebaseException catch (e) {
       print(e.message);
       throw ServerException(FirebaseErrorMapper.getMessage(e));

@@ -6,7 +6,7 @@ class GetAllAppointmentsUseCase {
 
   GetAllAppointmentsUseCase({required this.repository});
 
-  Future<List<AppointmentEntity>> call() async {
-    return await repository.getAllAppointments();
+  Stream<List<AppointmentEntity>> call() {
+    return repository.getAllAppointments();
   }
 }

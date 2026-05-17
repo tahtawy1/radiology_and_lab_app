@@ -2,7 +2,7 @@ import 'package:radiology_and_lab_app/features/appointment/domain/entites/appoin
 
 abstract class QueueRepository {
   /// Fetch all queue entries for today, ordered by queue number.
-  Future<List<AppointmentEntity>> getTodayQueue({required String department});
+  Stream<List<AppointmentEntity>> getTodayQueue({required String department});
 
   /// Stream of the patient's own queue entry so the patient screen auto-updates.
   Stream<AppointmentEntity?> watchPatientQueueEntry({required String patientId});

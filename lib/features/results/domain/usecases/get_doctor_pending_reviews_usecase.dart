@@ -6,7 +6,7 @@ class GetDoctorPendingReviewsUseCase {
 
   GetDoctorPendingReviewsUseCase(this.repository);
 
-  Future<List<ResultEntity>> call({required String doctorId}) {
+  Stream<List<ResultEntity>> call({required String doctorId}) {
     return repository.getDoctorPendingReviews(doctorId: doctorId);
   }
 }

@@ -258,7 +258,7 @@ Future<void> initGetIt() async {
 
   // Repositories
   getIt.registerLazySingleton<NotificationRepository>(
-    () => NotificationRepositoryImpl(getIt()),
+    () => NotificationRepositoryImpl(remoteDataSource: getIt()),
   );
 
   // Use Cases

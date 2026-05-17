@@ -6,7 +6,7 @@ class GetPatientResultsUseCase {
 
   GetPatientResultsUseCase(this.repository);
 
-  Future<List<ResultEntity>> call({required String patientId}) {
+  Stream<List<ResultEntity>> call({required String patientId}) {
     return repository.getPatientResults(patientId: patientId);
   }
 }

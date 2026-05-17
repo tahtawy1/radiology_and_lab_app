@@ -20,29 +20,9 @@ class NotificationsScreen extends StatefulWidget {
 class _NotificationsScreenState extends State<NotificationsScreen> {
   static const _teal = Color(0xFF0D9488);
 
-  @override
-  void initState() {
-    super.initState();
-    _startListening();
-  }
-
-  void _startListening() {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    final authState = context.read<AuthCubit>().state;
-    String role = 'patient'; // fallback
-    if (authState is Authenticated) {
-      role = authState.user.role.toLowerCase();
-    }
-
-    if (uid != null) {
-      context.read<NotificationsCubit>().listenToNotifications(uid, role);
-    }
-  }
-
-  // ── Pull-to-refresh re-subscribes the stream ────────────────────────────
+  // ── Pull-to-refresh is just a UI feedback since stream is real-time ─────────
   Future<void> _onRefresh() async {
-    _startListening();
-    // Small delay so the indicator is visible
+    // Stream updates automatically, just show the spinner briefly
     await Future.delayed(const Duration(milliseconds: 600));
   }
 

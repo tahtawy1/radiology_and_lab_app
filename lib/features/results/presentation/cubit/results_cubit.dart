@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/services/cloudinary_service.dart';
 import '../../domain/usecases/get_doctor_pending_reviews_usecase.dart';
@@ -18,6 +19,10 @@ class ResultsCubit extends Cubit<ResultsState> {
   final GetServedPatientsUseCase getServedPatientsUseCase;
   final CloudinaryService cloudinaryService;
   final SendNotificationUseCase sendNotificationUseCase;
+
+  StreamSubscription? _patientResultsSubscription;
+  StreamSubscription? _doctorPendingReviewsSubscription;
+  StreamSubscription? _servedPatientsSubscription;
 
   ResultsCubit({
     required this.uploadResultUseCase,
@@ -121,35 +126,64 @@ class ResultsCubit extends Cubit<ResultsState> {
   }
 
   // ── Get Patient Results ────────────────────────────────────────────────────
-  Future<void> getPatientResults(String patientId) async {
+  void getPatientResults(String patientId) {
     emit(ResultsLoading());
+    _patientResultsSubscription?.cancel();
     try {
-      final results = await getPatientResultsUseCase(patientId: patientId);
-      emit(ResultsLoaded(results));
+      _patientResultsSubscription = getPatientResultsUseCase(patientId: patientId).listen(
+        (results) {
+          emit(ResultsLoaded(results));
+        },
+        onError: (e) {
+          emit(ResultsError(_mapExceptionToMessage(e)));
+        },
+      );
     } catch (e) {
       emit(ResultsError(_mapExceptionToMessage(e)));
     }
   }
 
   // ── Get Doctor Pending Reviews ─────────────────────────────────────────────
-  Future<void> getDoctorPendingReviews(String doctorId) async {
+  void getDoctorPendingReviews(String doctorId) {
     emit(ResultsLoading());
+    _doctorPendingReviewsSubscription?.cancel();
     try {
-      final results = await getDoctorPendingReviewsUseCase(doctorId: doctorId);
-      emit(ResultsLoaded(results));
+      _doctorPendingReviewsSubscription = getDoctorPendingReviewsUseCase(doctorId: doctorId).listen(
+        (results) {
+          emit(ResultsLoaded(results));
+        },
+        onError: (e) {
+          emit(ResultsError(_mapExceptionToMessage(e)));
+        },
+      );
     } catch (e) {
       emit(ResultsError(_mapExceptionToMessage(e)));
     }
   }
 
   // ── Get Served Patients ────────────────────────────────────────────────────
-  Future<void> getServedPatients() async {
+  void getServedPatients() {
     emit(ResultsLoading());
+    _servedPatientsSubscription?.cancel();
     try {
-      final appointments = await getServedPatientsUseCase();
-      emit(ServedPatientsLoaded(appointments));
+      _servedPatientsSubscription = getServedPatientsUseCase().listen(
+        (appointments) {
+          emit(ServedPatientsLoaded(appointments));
+        },
+        onError: (e) {
+          emit(ResultsError(_mapExceptionToMessage(e)));
+        },
+      );
     } catch (e) {
       emit(ResultsError(_mapExceptionToMessage(e)));
     }
+  }
+
+  @override
+  Future<void> close() {
+    _patientResultsSubscription?.cancel();
+    _doctorPendingReviewsSubscription?.cancel();
+    _servedPatientsSubscription?.cancel();
+    return super.close();
   }
 }

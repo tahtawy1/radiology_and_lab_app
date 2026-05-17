@@ -6,7 +6,7 @@ class GetServedPatientsUseCase {
 
   GetServedPatientsUseCase(this.repository);
 
-  Future<List<AppointmentEntity>> call() {
+  Stream<List<AppointmentEntity>> call() {
     return repository.getServedPatients();
   }
 }

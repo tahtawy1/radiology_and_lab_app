@@ -19,11 +19,11 @@ abstract class ResultRemoteDataSource {
     required String classification,
   });
 
-  Future<List<ResultModel>> getPatientResults({required String patientId});
+  Stream<List<ResultModel>> getPatientResults({required String patientId});
 
-  Future<List<ResultModel>> getDoctorPendingReviews({required String doctorId});
+  Stream<List<ResultModel>> getDoctorPendingReviews({required String doctorId});
 
-  Future<List<AppointmentModel>> getServedPatients();
+  Stream<List<AppointmentModel>> getServedPatients();
 }
 
 class ResultRemoteDataSourceImpl implements ResultRemoteDataSource {
@@ -142,18 +142,16 @@ class ResultRemoteDataSourceImpl implements ResultRemoteDataSource {
   }
 
   @override
-  Future<List<ResultModel>> getPatientResults({
+  Stream<List<ResultModel>> getPatientResults({
     required String patientId,
-  }) async {
+  }) {
     try {
-      final resultsDoc =
-          await _firestore
-              .collection('results')
-              .where('patientId', isEqualTo: patientId)
-              .orderBy('createdAt', descending: true)
-              .get();
-
-      return resultsDoc.docs.map((e) => ResultModel.fromMap(e.data())).toList();
+      return _firestore
+          .collection('results')
+          .where('patientId', isEqualTo: patientId)
+          .orderBy('createdAt', descending: true)
+          .snapshots()
+          .map((snapshot) => snapshot.docs.map((e) => ResultModel.fromMap(e.data())).toList());
     } on FirebaseException catch (e) {
       throw ServerException(FirebaseErrorMapper.getMessage(e));
     } catch (e) {
@@ -164,19 +162,17 @@ class ResultRemoteDataSourceImpl implements ResultRemoteDataSource {
   }
 
   @override
-  Future<List<ResultModel>> getDoctorPendingReviews({
+  Stream<List<ResultModel>> getDoctorPendingReviews({
     required String doctorId,
-  }) async {
+  }) {
     try {
-      final resultsDoc =
-          await _firestore
-              .collection('results')
-              .where('doctorId', isEqualTo: doctorId)
-              .where('reviewedByDoctor', isEqualTo: false)
-              .orderBy('createdAt', descending: true)
-              .get();
-
-      return resultsDoc.docs.map((e) => ResultModel.fromMap(e.data())).toList();
+      return _firestore
+          .collection('results')
+          .where('doctorId', isEqualTo: doctorId)
+          .where('reviewedByDoctor', isEqualTo: false)
+          .orderBy('createdAt', descending: true)
+          .snapshots()
+          .map((snapshot) => snapshot.docs.map((e) => ResultModel.fromMap(e.data())).toList());
     } on FirebaseException catch (e) {
       throw ServerException(FirebaseErrorMapper.getMessage(e));
     } catch (e) {
@@ -187,18 +183,16 @@ class ResultRemoteDataSourceImpl implements ResultRemoteDataSource {
   }
 
   @override
-  Future<List<AppointmentModel>> getServedPatients() async {
+  Stream<List<AppointmentModel>> getServedPatients() {
     try {
-      final snapshot =
-          await _firestore
-              .collection('appointments')
-              .where('queueStatus', isEqualTo: 'served')
-              .where('resultUploaded', isEqualTo: false)
-              .get();
-
-      return snapshot.docs
-          .map((doc) => AppointmentModel.fromMap(doc.data()))
-          .toList();
+      return _firestore
+          .collection('appointments')
+          .where('queueStatus', isEqualTo: 'served')
+          .where('resultUploaded', isEqualTo: false)
+          .snapshots()
+          .map((snapshot) => snapshot.docs
+              .map((doc) => AppointmentModel.fromMap(doc.data()))
+              .toList());
     } on FirebaseException catch (e) {
       throw ServerException(FirebaseErrorMapper.getMessage(e));
     } catch (e) {

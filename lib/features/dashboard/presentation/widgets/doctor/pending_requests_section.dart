@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:radiology_and_lab_app/core/constants/app_colors.dart';
@@ -86,7 +87,18 @@ class _PendingCard extends StatelessWidget {
               ),
             ),
             GestureDetector(
-              onTap: () => context.go(AppStrings.doctorApprovalRoute),
+              onTap: () async {
+                await context.push(
+                  AppStrings.doctorApprovalRoute,
+                  extra: {'showBackButton': true},
+                );
+                if (context.mounted) {
+                  final user = FirebaseAuth.instance.currentUser;
+                  if (user != null) {
+                    context.read<AppointmentCubit>().getPendingAppointmentsForDoctor(user.uid);
+                  }
+                }
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(

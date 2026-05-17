@@ -33,31 +33,31 @@ class AppointmentRepositoryImpl implements AppointmentRepository {
   }
 
   @override
-  Future<List<AppointmentEntity>> getAllAppointments() async {
+  Stream<List<AppointmentEntity>> getAllAppointments() {
     try {
-      return await remoteDataSource.getAllAppointments();
+      return remoteDataSource.getAllAppointments();
     } on AppException {
       rethrow;
     }
   }
 
   @override
-  Future<List<AppointmentEntity>> getAppointmentsByPatientId(
+  Stream<List<AppointmentEntity>> getAppointmentsByPatientId(
     String patientId,
-  ) async {
+  ) {
     try {
-      return await remoteDataSource.getAppointmentsByPatientId(patientId);
+      return remoteDataSource.getAppointmentsByPatientId(patientId);
     } on AppException {
       rethrow;
     }
   }
 
   @override
-  Future<List<AppointmentEntity>> getPendingAppointmentsForDoctor(
+  Stream<List<AppointmentEntity>> getPendingAppointmentsForDoctor(
     String doctorId,
-  ) async {
+  ) {
     try {
-      return await remoteDataSource.getPendingAppointmentsForDoctor(doctorId);
+      return remoteDataSource.getPendingAppointmentsForDoctor(doctorId);
     } on AppException {
       rethrow;
     }

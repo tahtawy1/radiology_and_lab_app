@@ -5,14 +5,13 @@ import 'package:go_router/go_router.dart';
 import 'package:radiology_and_lab_app/core/constants/app_colors.dart';
 import 'package:radiology_and_lab_app/core/constants/app_strings.dart';
 import 'package:radiology_and_lab_app/features/auth/domain/entities/user_entity.dart';
+import 'package:radiology_and_lab_app/features/dashboard/presentation/widgets/admin/active_queue_preview.dart';
+import 'package:radiology_and_lab_app/features/dashboard/presentation/widgets/admin/admin_actions_grid.dart';
+import 'package:radiology_and_lab_app/features/dashboard/presentation/widgets/admin/admin_queue_summary.dart';
+import 'package:radiology_and_lab_app/features/dashboard/presentation/widgets/admin/recent_uploads_section.dart';
+import 'package:radiology_and_lab_app/features/dashboard/presentation/widgets/shared/dashboard_header.dart';
+import 'package:radiology_and_lab_app/features/dashboard/presentation/widgets/shared/dashboard_section_title.dart';
 import 'package:radiology_and_lab_app/features/queue/presentation/cubit/queue_admin_cubit.dart';
-
-import '../../widgets/shared/dashboard_header.dart';
-import '../../widgets/shared/dashboard_section_title.dart';
-import '../../widgets/admin/admin_queue_summary.dart';
-import '../../widgets/admin/admin_actions_grid.dart';
-import '../../widgets/admin/active_queue_preview.dart';
-import '../../widgets/admin/recent_uploads_section.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   final UserEntity user;

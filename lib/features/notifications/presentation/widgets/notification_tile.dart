@@ -77,10 +77,10 @@ class NotificationTile extends StatelessWidget {
         duration: const Duration(milliseconds: 250),
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isUnread ? style.color.withValues(alpha: 0.04) : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: Colors.grey.shade200,
+            color: isUnread ? style.color.withValues(alpha: 0.3) : Colors.grey.shade200,
             width: 1,
           ),
           boxShadow: [
@@ -144,8 +144,8 @@ class NotificationTile extends StatelessWidget {
                                       fontSize: 15,
                                       fontWeight: isUnread
                                           ? FontWeight.w800
-                                          : FontWeight.w600,
-                                      color: const Color(0xFF1E293B),
+                                          : FontWeight.w500,
+                                      color: isUnread ? const Color(0xFF0F172A) : const Color(0xFF475569),
                                     ),
                                   ),
                                 ),
@@ -164,9 +164,9 @@ class NotificationTile extends StatelessWidget {
                               notification.body,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
-                                color: Color(0xFF64748B),
+                                color: isUnread ? const Color(0xFF334155) : const Color(0xFF94A3B8),
                                 height: 1.4,
                               ),
                             ),

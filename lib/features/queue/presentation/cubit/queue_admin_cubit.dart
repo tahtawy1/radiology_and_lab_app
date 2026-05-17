@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/failures.dart';
@@ -19,6 +20,8 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
   final MarkQueueNoShowUseCase markQueueNoShowUseCase;
   final SendNotificationUseCase sendNotificationUseCase;
 
+  StreamSubscription? _queueSubscription;
+
   QueueAdminCubit({
     required this.getTodayQueueUseCase,
     required this.checkInPatientUseCase,
@@ -34,22 +37,30 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
   }
 
   // ── Fetch Queue ────────────────────────────────────────────────────────────
-  Future<void> fetchQueue({required String department}) async {
+  void fetchQueue({required String department}) {
     emit(QueueAdminLoading());
-    try {
-      final entries = await getTodayQueueUseCase(department: department);
-      final totalToday = entries.length;
-      final called =
-          entries.where((e) => e.queueStatus?.name == 'called').length;
-      final served =
-          entries.where((e) => e.queueStatus?.name == 'served').length;
+    _queueSubscription?.cancel();
 
-      emit(QueueAdminLoaded(
-        queueEntries: entries,
-        totalToday: totalToday,
-        called: called,
-        served: served,
-      ));
+    try {
+      _queueSubscription = getTodayQueueUseCase(department: department).listen(
+        (entries) {
+          final totalToday = entries.length;
+          final called =
+              entries.where((e) => e.queueStatus?.name == 'called').length;
+          final served =
+              entries.where((e) => e.queueStatus?.name == 'served').length;
+
+          emit(QueueAdminLoaded(
+            queueEntries: entries,
+            totalToday: totalToday,
+            called: called,
+            served: served,
+          ));
+        },
+        onError: (e) {
+          emit(QueueAdminError(_mapExceptionToMessage(e)));
+        },
+      );
     } catch (e) {
       emit(QueueAdminError(_mapExceptionToMessage(e)));
     }
@@ -66,7 +77,7 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
         department: department,
       );
       emit(QueueAdminActionSuccess('Patient checked in successfully'));
-      await fetchQueue(department: department);
+      // No need to call fetchQueue; the stream auto-updates.
     } catch (e) {
       emit(QueueAdminError(_mapExceptionToMessage(e)));
     }
@@ -91,7 +102,7 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
         );
       }
       emit(QueueAdminActionSuccess('Next patient called'));
-      await fetchQueue(department: department);
+      // No need to call fetchQueue; the stream auto-updates.
     } catch (e) {
       emit(QueueAdminError(_mapExceptionToMessage(e)));
     }
@@ -105,7 +116,7 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
     try {
       await markQueueServedUseCase(appointmentId: appointmentId);
       emit(QueueAdminActionSuccess('Patient marked as served'));
-      await fetchQueue(department: department);
+      // No need to call fetchQueue; the stream auto-updates.
     } catch (e) {
       emit(QueueAdminError(_mapExceptionToMessage(e)));
     }
@@ -119,10 +130,16 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
     try {
       await markQueueNoShowUseCase(appointmentId: appointmentId);
       emit(QueueAdminActionSuccess('Patient marked as no-show'));
-      await fetchQueue(department: department);
+      // No need to call fetchQueue; the stream auto-updates.
     } catch (e) {
       emit(QueueAdminError(_mapExceptionToMessage(e)));
     }
+  }
+
+  @override
+  Future<void> close() {
+    _queueSubscription?.cancel();
+    return super.close();
   }
 }
 

@@ -12,7 +12,11 @@ class QueueAdminView extends StatefulWidget {
   final String department;
   final bool showBackButton;
 
-  const QueueAdminView({super.key, this.department = 'Radiology', this.showBackButton = false});
+  const QueueAdminView({
+    super.key,
+    this.department = 'Radiology',
+    this.showBackButton = false,
+  });
 
   @override
   State<QueueAdminView> createState() => _QueueAdminViewState();
@@ -33,15 +37,24 @@ class _QueueAdminViewState extends State<QueueAdminView> {
         backgroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
-        leading: widget.showBackButton
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
-                onPressed: () => context.pop(),
-              )
-            : null,
+        leading:
+            widget.showBackButton
+                ? IconButton(
+                  icon: const Icon(
+                    Icons.arrow_back_ios,
+                    color: Colors.black,
+                    size: 20,
+                  ),
+                  onPressed: () => context.pop(),
+                )
+                : null,
         title: const Text(
           'Queue Management',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18),
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
       ),
       body: BlocConsumer<QueueAdminCubit, QueueAdminState>(
@@ -59,24 +72,45 @@ class _QueueAdminViewState extends State<QueueAdminView> {
 
           if (state is QueueAdminLoaded) {
             return RefreshIndicator(
-              onRefresh: () => context.read<QueueAdminCubit>().fetchQueue(department: widget.department),
+              onRefresh:
+                  () async => context.read<QueueAdminCubit>().fetchQueue(
+                    department: widget.department,
+                  ),
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
                   _buildStatsRow(state),
                   const SizedBox(height: 24),
-                  
+
                   // SECTION 1: Confirmed Appointments (Pending Check-In)
-                  const Text('Pending Check-In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  const Text(
+                    'Pending Check-In',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   ...state.queueEntries
-                      .where((e) => e.status.name == 'confirmed' && e.queueStatus == null)
+                      .where(
+                        (e) =>
+                            e.status.name == 'confirmed' &&
+                            e.queueStatus == null,
+                      )
                       .map((e) => _buildConfirmedCard(context, e)),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // SECTION 2: Active Queue
-                  const Text('Active Queue', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  const Text(
+                    'Active Queue',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   _buildCallNextButton(context),
                   const SizedBox(height: 16),
@@ -97,11 +131,25 @@ class _QueueAdminViewState extends State<QueueAdminView> {
   Widget _buildStatsRow(QueueAdminLoaded state) {
     return Row(
       children: [
-        Expanded(child: _buildStatCard('Total Today', state.totalToday.toString(), Colors.black)),
+        Expanded(
+          child: _buildStatCard(
+            'Total Today',
+            state.totalToday.toString(),
+            Colors.black,
+          ),
+        ),
         const SizedBox(width: 8),
-        Expanded(child: _buildStatCard('Called', state.called.toString(), Colors.blue)),
+        Expanded(
+          child: _buildStatCard('Called', state.called.toString(), Colors.blue),
+        ),
         const SizedBox(width: 8),
-        Expanded(child: _buildStatCard('Served', state.served.toString(), Colors.green)),
+        Expanded(
+          child: _buildStatCard(
+            'Served',
+            state.served.toString(),
+            Colors.green,
+          ),
+        ),
       ],
     );
   }
@@ -113,15 +161,29 @@ class _QueueAdminViewState extends State<QueueAdminView> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+          Text(
+            title,
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+          ),
           const SizedBox(height: 4),
-          Text(value, style: TextStyle(color: valueColor, fontWeight: FontWeight.bold, fontSize: 20)),
+          Text(
+            value,
+            style: TextStyle(
+              color: valueColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
+          ),
         ],
       ),
     );
@@ -133,13 +195,27 @@ class _QueueAdminViewState extends State<QueueAdminView> {
       height: 50,
       child: ElevatedButton.icon(
         onPressed: () {
-          context.read<QueueAdminCubit>().callNextPatient(department: widget.department);
+          context.read<QueueAdminCubit>().callNextPatient(
+            department: widget.department,
+          );
         },
-        icon: const Icon(Icons.notifications_active_outlined, color: Colors.white),
-        label: const Text('Call Next Patient', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+        icon: const Icon(
+          Icons.notifications_active_outlined,
+          color: Colors.white,
+        ),
+        label: const Text(
+          'Call Next Patient',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF0F766E),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       ),
     );
@@ -155,7 +231,11 @@ class _QueueAdminViewState extends State<QueueAdminView> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.orange.shade200),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
@@ -168,15 +248,40 @@ class _QueueAdminViewState extends State<QueueAdminView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(entry.patientName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    Text(entry.testType, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                    Text(
+                      entry.patientName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      entry.testType,
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 13,
+                      ),
+                    ),
                   ],
                 ),
               ),
               Container(
-                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                 decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(12)),
-                 child: const Text('Confirmed', style: TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  'Confirmed',
+                  style: TextStyle(
+                    color: Colors.orange,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),
@@ -190,13 +295,21 @@ class _QueueAdminViewState extends State<QueueAdminView> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                context.read<QueueAdminCubit>().checkInPatient(appointmentId: entry.id, department: widget.department);
+                context.read<QueueAdminCubit>().checkInPatient(
+                  appointmentId: entry.id,
+                  department: widget.department,
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0F766E),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
-              child: const Text('Check-In to Queue', style: TextStyle(color: Colors.white)),
+              child: const Text(
+                'Check-In to Queue',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ),
         ],
@@ -213,7 +326,11 @@ class _QueueAdminViewState extends State<QueueAdminView> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
@@ -223,43 +340,76 @@ class _QueueAdminViewState extends State<QueueAdminView> {
               CircleAvatar(
                 backgroundColor: const Color(0xFF0F766E),
                 radius: 20,
-                child: Text('#${entry.queueNumber ?? '?'}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: Text(
+                  '#${entry.queueNumber ?? '?'}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(entry.patientName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    Text(entry.testType, style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+                    Text(
+                      entry.patientName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      entry.testType,
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 12,
+                      ),
+                    ),
                   ],
                 ),
               ),
               _buildStatusBadge(entry.queueStatus?.name ?? 'unknown'),
             ],
           ),
-          if (entry.queueStatus?.name == 'waiting' || entry.queueStatus?.name == 'called') ...[
+          if (entry.queueStatus?.name == 'waiting' ||
+              entry.queueStatus?.name == 'called') ...[
             const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {
-                      context.read<QueueAdminCubit>().markServed(appointmentId: entry.id, department: widget.department);
+                      context.read<QueueAdminCubit>().markServed(
+                        appointmentId: entry.id,
+                        department: widget.department,
+                      );
                     },
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Color(0xFF0F766E)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                    child: const Text('Mark Served', style: TextStyle(color: Color(0xFF0F766E))),
+                    child: const Text(
+                      'Mark Served',
+                      style: TextStyle(color: Color(0xFF0F766E)),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 TextButton(
                   onPressed: () {
-                    context.read<QueueAdminCubit>().markNoShow(appointmentId: entry.id, department: widget.department);
+                    context.read<QueueAdminCubit>().markNoShow(
+                      appointmentId: entry.id,
+                      department: widget.department,
+                    );
                   },
-                  child: const Text('No Show', style: TextStyle(color: Colors.red)),
+                  child: const Text(
+                    'No Show',
+                    style: TextStyle(color: Colors.red),
+                  ),
                 ),
               ],
             ),
@@ -269,15 +419,17 @@ class _QueueAdminViewState extends State<QueueAdminView> {
               children: [
                 Icon(Icons.check, color: Colors.green, size: 16),
                 SizedBox(width: 4),
-                Text('Served', style: TextStyle(color: Colors.green, fontSize: 12)),
+                Text(
+                  'Served',
+                  style: TextStyle(color: Colors.green, fontSize: 12),
+                ),
               ],
             ),
-          ]
+          ],
         ],
       ),
     );
   }
-
 
   Widget _buildStatusBadge(String status) {
     Color bgColor;
@@ -313,8 +465,18 @@ class _QueueAdminViewState extends State<QueueAdminView> {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(12)),
-      child: Text(text, style: TextStyle(color: textColor, fontSize: 10, fontWeight: FontWeight.bold)),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 }

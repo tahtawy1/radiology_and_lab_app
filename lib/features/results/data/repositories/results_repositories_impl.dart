@@ -37,19 +37,19 @@ class ResultsRepositoryImpl implements ResultsRepository {
   }
 
   @override
-  Future<List<ResultEntity>> getPatientResults({required String patientId}) {
+  Stream<List<ResultEntity>> getPatientResults({required String patientId}) {
     return remoteDataSource.getPatientResults(patientId: patientId);
   }
 
   @override
-  Future<List<ResultEntity>> getDoctorPendingReviews({
+  Stream<List<ResultEntity>> getDoctorPendingReviews({
     required String doctorId,
   }) {
     return remoteDataSource.getDoctorPendingReviews(doctorId: doctorId);
   }
 
   @override
-  Future<List<AppointmentEntity>> getServedPatients() {
+  Stream<List<AppointmentEntity>> getServedPatients() {
     return remoteDataSource.getServedPatients();
   }
 }

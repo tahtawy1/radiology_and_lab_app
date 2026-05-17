@@ -24,8 +24,8 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController(text: 'aarr882002@gmail.com');
-  final _passwordController = TextEditingController(text: 'Ahmed@882005');
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   String _selectedRole = 'Patient';
 
   @override
