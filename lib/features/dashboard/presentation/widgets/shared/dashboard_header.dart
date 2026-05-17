@@ -7,18 +7,14 @@ class DashboardHeader extends StatelessWidget {
   final String greeting;
   final String name;
   final String roleLabel;
-  final bool showNotification;
   final VoidCallback? onAvatarTap;
-  final VoidCallback? onNotificationTap;
 
   const DashboardHeader({
     super.key,
     required this.greeting,
     required this.name,
     required this.roleLabel,
-    this.showNotification = false,
     this.onAvatarTap,
-    this.onNotificationTap,
   });
 
   @override
@@ -68,7 +64,10 @@ class DashboardHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.glassWhite20,
                     borderRadius: BorderRadius.circular(20),
@@ -88,24 +87,6 @@ class DashboardHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          if (showNotification)
-            GestureDetector(
-              onTap: onNotificationTap,
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.glassWhite20,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.glassBorder),
-                ),
-                child: const Icon(
-                  Icons.notifications_outlined,
-                  color: AppColors.white,
-                  size: 20,
-                ),
-              ),
-            ),
-          if (showNotification) const SizedBox(width: 10),
           GestureDetector(
             onTap: onAvatarTap,
             child: CircleAvatar(

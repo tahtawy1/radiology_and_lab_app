@@ -8,7 +8,8 @@ import 'package:radiology_and_lab_app/features/appointment/presentation/widgets/
 import 'package:radiology_and_lab_app/shared/widgets/app_snackbar.dart';
 
 class DoctorApprovalScreen extends StatefulWidget {
-  const DoctorApprovalScreen({super.key});
+  final bool showBackButton;
+  const DoctorApprovalScreen({super.key, this.showBackButton = false});
 
   @override
   State<DoctorApprovalScreen> createState() => _DoctorApprovalScreenState();
@@ -76,10 +77,13 @@ class _DoctorApprovalScreenState extends State<DoctorApprovalScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => context.pop(),
-        ),
+        automaticallyImplyLeading: false,
+        leading: widget.showBackButton
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () => context.pop(),
+              )
+            : null,
         title: const Text(
           'Pending Approvals',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),

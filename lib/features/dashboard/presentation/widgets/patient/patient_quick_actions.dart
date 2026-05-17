@@ -22,7 +22,7 @@ class PatientQuickActions extends StatelessWidget {
         label: 'My Appointments',
         color: Colors.blue,
         bg: Colors.blue.shade50,
-        onTap: () => context.push(AppStrings.myAppointmentsRoute),
+        onTap: () => context.push(AppStrings.myAppointmentsRoute, extra: {'showBackButton': true}),
       ),
       _ActionItem(
         icon: Icons.queue_outlined,
@@ -36,7 +36,7 @@ class PatientQuickActions extends StatelessWidget {
         label: 'Results',
         color: Colors.purple,
         bg: Colors.purple.shade50,
-        onTap: () {},
+        onTap: () => context.push(AppStrings.patientResultsRoute, extra: {'showBackButton': true}),
       ),
     ];
 

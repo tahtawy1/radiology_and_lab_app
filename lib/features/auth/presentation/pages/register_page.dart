@@ -169,8 +169,8 @@ class _RegisterPageState extends State<RegisterPage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight.withOpacity(0.05),
-        border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
+        color: AppColors.primaryLight.withValues(alpha: 0.05),
+        border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(

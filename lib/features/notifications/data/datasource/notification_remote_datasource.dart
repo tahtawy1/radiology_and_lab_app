@@ -5,7 +5,7 @@ import '../models/notification_model.dart';
 
 abstract class NotificationRemoteDataSource {
   Future<void> createNotification(NotificationModel notification);
-  Stream<List<NotificationModel>> streamUserNotifications(String userId);
+  Stream<List<NotificationModel>> streamUserNotifications(String userId, String role);
   Future<void> markAsRead(String notificationId);
 }
 
@@ -62,10 +62,15 @@ class NotificationRemoteDataSourceImpl
 
   // ── Stream ────────────────────────────────────────────────────────────────
   @override
-  Stream<List<NotificationModel>> streamUserNotifications(String userId) {
+  Stream<List<NotificationModel>> streamUserNotifications(String userId, String role) {
     return _firestore
         .collection(_collection)
-        .where('userId', isEqualTo: userId)
+        .where(
+          Filter.or(
+            Filter('userId', isEqualTo: userId),
+            Filter('targetRole', isEqualTo: role),
+          ),
+        )
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map(

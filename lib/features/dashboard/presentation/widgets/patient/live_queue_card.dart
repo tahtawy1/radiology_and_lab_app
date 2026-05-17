@@ -40,6 +40,7 @@ class LiveQueueCard extends StatelessWidget {
 
         return Container(
           padding: const EdgeInsets.all(18),
+          margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: gradientColors,

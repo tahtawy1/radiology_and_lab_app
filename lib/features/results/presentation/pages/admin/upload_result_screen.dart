@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:file_picker/file_picker.dart';
@@ -54,9 +53,8 @@ class _UploadResultScreenState extends State<UploadResultScreen> {
         });
       }
     } catch (e) {
-      if (context.mounted) {
-        AppSnackBar.showError(context, 'Error picking file: $e');
-      }
+      if (!mounted) return;
+      AppSnackBar.showError(context, 'Error picking file: $e');
     }
   }
 
@@ -157,7 +155,7 @@ class _UploadResultScreenState extends State<UploadResultScreen> {
                           decoration: BoxDecoration(
                             color:
                                 _filePath != null
-                                    ? const Color(0xFF0D9488).withOpacity(0.06)
+                                    ? const Color(0xFF0D9488).withValues(alpha: 0.06)
                                     : Colors.white,
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
@@ -338,7 +336,7 @@ class _UploadResultScreenState extends State<UploadResultScreen> {
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                       child: Container(
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.white.withValues(alpha: 0.3),
                         child: const Center(
                           child: CircularProgressIndicator(
                             color: Color(0xFF0D9488),
@@ -414,9 +412,8 @@ class _SectionCard extends StatelessWidget {
 class _InfoRow extends StatelessWidget {
   final String initials;
   final String title;
-  final String? subtitle;
 
-  const _InfoRow({required this.initials, required this.title, this.subtitle});
+  const _InfoRow({required this.initials, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -424,7 +421,7 @@ class _InfoRow extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 18,
-          backgroundColor: const Color(0xFF0D9488).withOpacity(0.15),
+          backgroundColor: const Color(0xFF0D9488).withValues(alpha: 0.15),
           child: Text(
             initials,
             style: const TextStyle(
@@ -450,11 +447,6 @@ class _InfoRow extends StatelessWidget {
                 ),
               ),
 
-              if (subtitle != null)
-                Text(
-                  subtitle!,
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-                ),
             ],
           ),
         ),

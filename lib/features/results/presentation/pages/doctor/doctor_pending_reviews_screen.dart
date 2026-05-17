@@ -9,7 +9,8 @@ import '../../cubit/results_state.dart';
 import '../../widgets/doctor/pending_review_card.dart';
 
 class DoctorPendingReviewsScreen extends StatefulWidget {
-  const DoctorPendingReviewsScreen({super.key});
+  final bool showBackButton;
+  const DoctorPendingReviewsScreen({super.key, this.showBackButton = false});
 
   @override
   State<DoctorPendingReviewsScreen> createState() =>
@@ -27,7 +28,6 @@ class _DoctorPendingReviewsScreenState
 
   void _fetchPendingReviews() {
     final doctorId = UserSessionService.currentUser?.id;
-    print('doctor id is $doctorId');
     if (doctorId != null) {
       context.read<ResultsCubit>().getDoctorPendingReviews(doctorId);
     }
@@ -40,6 +40,13 @@ class _DoctorPendingReviewsScreenState
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        automaticallyImplyLeading: false,
+        leading: widget.showBackButton
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () => context.pop(),
+              )
+            : null,
         title: const Text(
           'Pending Reviews',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),

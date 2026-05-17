@@ -16,8 +16,8 @@ class NotificationRepositoryImpl implements NotificationRepository {
   }
 
   @override
-  Stream<List<NotificationEntity>> getUserNotifications(String userId) {
-    return _dataSource.streamUserNotifications(userId);
+  Stream<List<NotificationEntity>> getUserNotifications(String userId, String role) {
+    return _dataSource.streamUserNotifications(userId, role);
   }
 
   @override

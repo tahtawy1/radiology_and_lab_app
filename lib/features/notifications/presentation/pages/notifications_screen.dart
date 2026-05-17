@@ -3,12 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../../shared/widgets/app_snackbar.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
+import '../../../auth/presentation/cubit/auth_state.dart';
 import '../cubit/notifications_cubit.dart';
 import '../cubit/notifications_state.dart';
 import '../widgets/notification_tile.dart';
 
 class NotificationsScreen extends StatefulWidget {
-  const NotificationsScreen({super.key});
+  final bool showBackButton;
+  const NotificationsScreen({super.key, this.showBackButton = false});
 
   @override
   State<NotificationsScreen> createState() => _NotificationsScreenState();
@@ -16,23 +19,29 @@ class NotificationsScreen extends StatefulWidget {
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
   static const _teal = Color(0xFF0D9488);
-  static const _tealDark = Color(0xFF0F766E);
 
   @override
   void initState() {
     super.initState();
+    _startListening();
+  }
+
+  void _startListening() {
     final uid = FirebaseAuth.instance.currentUser?.uid;
+    final authState = context.read<AuthCubit>().state;
+    String role = 'patient'; // fallback
+    if (authState is Authenticated) {
+      role = authState.user.role.toLowerCase();
+    }
+
     if (uid != null) {
-      context.read<NotificationsCubit>().listenToNotifications(uid);
+      context.read<NotificationsCubit>().listenToNotifications(uid, role);
     }
   }
 
   // ── Pull-to-refresh re-subscribes the stream ────────────────────────────
   Future<void> _onRefresh() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid != null) {
-      context.read<NotificationsCubit>().listenToNotifications(uid);
-    }
+    _startListening();
     // Small delay so the indicator is visible
     await Future.delayed(const Duration(milliseconds: 600));
   }
@@ -51,25 +60,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF475569), size: 20),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        automaticallyImplyLeading: false,
+        leading:
+            widget.showBackButton
+                ? IconButton(
+                  icon: const Icon(
+                    Icons.arrow_back_ios_new,
+                    color: Color(0xFF475569),
+                    size: 20,
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                )
+                : null,
         title: const Text(
           'Notifications',
-          style: TextStyle(
-            color: Color(0xFF1E293B),
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Color(0xFF475569)),
-            onPressed: () {}, // Optional settings action
-          ),
-        ],
       ),
       body: BlocConsumer<NotificationsCubit, NotificationsState>(
         listener: (context, state) {
@@ -95,52 +101,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             }
 
             final todayNotifs =
-                state.notifications.where((n) => _isToday(n.createdAt)).toList();
+                state.notifications
+                    .where((n) => _isToday(n.createdAt))
+                    .toList();
             final earlierNotifs =
-                state.notifications.where((n) => !_isToday(n.createdAt)).toList();
+                state.notifications
+                    .where((n) => !_isToday(n.createdAt))
+                    .toList();
 
             return RefreshIndicator(
               color: _teal,
               onRefresh: _onRefresh,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 children: [
                   // ── Inbox Header ─────────────────────────────────────────
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Inbox',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
-                        ),
-                      ),
-                      if (state.unreadCount > 0)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFCCFBF1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '${state.unreadCount} unread',
-                            style: const TextStyle(
-                              color: Color(0xFF0D9488),
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
                   // ── Today Section ────────────────────────────────────────
                   if (todayNotifs.isNotEmpty) ...[
                     const Text(
@@ -157,7 +136,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         notification: notif,
                         onTap: () {
                           if (!notif.isRead) {
-                            context.read<NotificationsCubit>().markAsRead(notif.id);
+                            context.read<NotificationsCubit>().markAsRead(
+                              notif.id,
+                            );
                           }
                         },
                       ),
@@ -181,7 +162,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         notification: notif,
                         onTap: () {
                           if (!notif.isRead) {
-                            context.read<NotificationsCubit>().markAsRead(notif.id);
+                            context.read<NotificationsCubit>().markAsRead(
+                              notif.id,
+                            );
                           }
                         },
                       ),
@@ -198,8 +181,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 }
-
-
 
 // ── Loading view ───────────────────────────────────────────────────────────────
 class _LoadingView extends StatelessWidget {
@@ -307,7 +288,7 @@ class _EmptyView extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xFF0D9488).withOpacity(0.08),
+              color: const Color(0xFF0D9488).withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
             child: const Icon(

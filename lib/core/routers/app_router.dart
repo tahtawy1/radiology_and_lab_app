@@ -22,7 +22,6 @@ import 'package:radiology_and_lab_app/features/queue/presentation/cubit/queue_ad
 import 'package:radiology_and_lab_app/features/queue/presentation/pages/patient/queue_patient_screen.dart';
 import 'package:radiology_and_lab_app/features/queue/presentation/cubit/queue_patient_cubit.dart';
 import 'package:radiology_and_lab_app/features/dashboard/presentation/pages/main_dashboard_screen.dart';
-import 'package:radiology_and_lab_app/features/dashboard/presentation/pages/doctor/doctor_notifications_screen.dart';
 import 'package:radiology_and_lab_app/features/results/presentation/cubit/results_cubit.dart';
 import 'package:radiology_and_lab_app/features/results/presentation/pages/admin/upload_result_screen.dart';
 import 'package:radiology_and_lab_app/features/results/presentation/pages/admin/served_patients_results_screen.dart';
@@ -102,27 +101,36 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: AppStrings.myAppointmentsRoute,
-      builder:
-          (_, __) => BlocProvider<AppointmentCubit>(
-            create: (_) => getIt<AppointmentCubit>(),
-            child: const MyAppointmentsScreen(),
-          ),
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        final showBackButton = extra?['showBackButton'] as bool? ?? false;
+        return BlocProvider<AppointmentCubit>(
+          create: (_) => getIt<AppointmentCubit>(),
+          child: MyAppointmentsScreen(showBackButton: showBackButton),
+        );
+      },
     ),
     GoRoute(
       path: AppStrings.doctorApprovalRoute,
-      builder:
-          (_, __) => BlocProvider<AppointmentCubit>(
-            create: (_) => getIt<AppointmentCubit>(),
-            child: const DoctorApprovalScreen(),
-          ),
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        final showBackButton = extra?['showBackButton'] as bool? ?? false;
+        return BlocProvider<AppointmentCubit>(
+          create: (_) => getIt<AppointmentCubit>(),
+          child: DoctorApprovalScreen(showBackButton: showBackButton),
+        );
+      },
     ),
     GoRoute(
       path: AppStrings.queueAdminRoute,
-      builder:
-          (_, __) => BlocProvider<QueueAdminCubit>(
-            create: (_) => getIt<QueueAdminCubit>(),
-            child: const QueueAdminView(),
-          ),
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        final showBackButton = extra?['showBackButton'] as bool? ?? false;
+        return BlocProvider<QueueAdminCubit>(
+          create: (_) => getIt<QueueAdminCubit>(),
+          child: QueueAdminView(showBackButton: showBackButton),
+        );
+      },
     ),
     GoRoute(
       path: AppStrings.queuePatientRoute,
@@ -131,10 +139,6 @@ final GoRouter appRouter = GoRouter(
             create: (_) => getIt<QueuePatientCubit>(),
             child: const QueuePatientView(),
           ),
-    ),
-    GoRoute(
-      path: AppStrings.notificationsRoute,
-      builder: (_, __) => const DoctorNotificationsScreen(),
     ),
 
     // Results Feature Routes
@@ -171,11 +175,14 @@ final GoRouter appRouter = GoRouter(
 
     GoRoute(
       path: AppStrings.patientResultsRoute,
-      builder:
-          (_, _) => BlocProvider<ResultsCubit>(
-            create: (context) => getIt<ResultsCubit>(),
-            child: const PatientResultsScreen(),
-          ),
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        final showBackButton = extra?['showBackButton'] as bool? ?? false;
+        return BlocProvider<ResultsCubit>(
+          create: (context) => getIt<ResultsCubit>(),
+          child: PatientResultsScreen(showBackButton: showBackButton),
+        );
+      },
     ),
     GoRoute(
       path: AppStrings.reviewResultRoute,
@@ -193,21 +200,27 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: AppStrings.doctorPendingReviewsRoute,
-      builder:
-          (_, _) => BlocProvider<ResultsCubit>(
-            create: (context) => getIt<ResultsCubit>(),
-            child: const DoctorPendingReviewsScreen(),
-          ),
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        final showBackButton = extra?['showBackButton'] as bool? ?? false;
+        return BlocProvider<ResultsCubit>(
+          create: (context) => getIt<ResultsCubit>(),
+          child: DoctorPendingReviewsScreen(showBackButton: showBackButton),
+        );
+      },
     ),
 
     // Notifications Feature Route
     GoRoute(
       path: AppStrings.notificationsRoute,
-      builder:
-          (_, _) => BlocProvider<NotificationsCubit>(
-            create: (context) => getIt<NotificationsCubit>(),
-            child: const NotificationsScreen(),
-          ),
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        final showBackButton = extra?['showBackButton'] as bool? ?? false;
+        return BlocProvider<NotificationsCubit>(
+          create: (context) => getIt<NotificationsCubit>(),
+          child: NotificationsScreen(showBackButton: showBackButton),
+        );
+      },
     ),
   ],
 );

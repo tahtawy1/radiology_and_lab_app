@@ -22,7 +22,7 @@ class ServedPatientCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -39,7 +39,7 @@ class ServedPatientCard extends StatelessWidget {
                 // Initials Avatar
                 CircleAvatar(
                   radius: 24,
-                  backgroundColor: const Color(0xFF0D9488).withOpacity(0.1),
+                  backgroundColor: const Color(0xFF0D9488).withValues(alpha: 0.1),
                   child: Text(
                     _getInitials(appointment.patientName),
                     style: const TextStyle(

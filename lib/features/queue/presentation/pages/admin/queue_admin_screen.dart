@@ -10,8 +10,9 @@ import '../../cubit/queue_admin_state.dart';
 
 class QueueAdminView extends StatefulWidget {
   final String department;
+  final bool showBackButton;
 
-  const QueueAdminView({super.key, this.department = 'Radiology'});
+  const QueueAdminView({super.key, this.department = 'Radiology', this.showBackButton = false});
 
   @override
   State<QueueAdminView> createState() => _QueueAdminViewState();
@@ -31,10 +32,13 @@ class _QueueAdminViewState extends State<QueueAdminView> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
-          onPressed: () => context.pop(),
-        ),
+        automaticallyImplyLeading: false,
+        leading: widget.showBackButton
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
+                onPressed: () => context.pop(),
+              )
+            : null,
         title: const Text(
           'Queue Management',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18),

@@ -25,51 +25,69 @@ class PatientStatisticsSection extends StatelessWidget {
         if (state is AppointmentsLoaded) {
           final all = state.appointments;
           total = all.length;
-          pending = all.where((a) => a.status == AppointmentStatus.pending).length;
-          completed = all.where((a) => a.status == AppointmentStatus.confirmed).length;
-          upcoming = all
-              .where((a) =>
-                  (a.status == AppointmentStatus.pending ||
-                      a.status == AppointmentStatus.confirmed) &&
-                  !a.appointmentDateTime.isBefore(DateTime.now()))
-              .length;
+          pending =
+              all.where((a) => a.status == AppointmentStatus.pending).length;
+          completed =
+              all.where((a) => a.status == AppointmentStatus.confirmed).length;
+          upcoming =
+              all
+                  .where(
+                    (a) =>
+                        (a.status == AppointmentStatus.pending ||
+                            a.status == AppointmentStatus.confirmed) &&
+                        !a.appointmentDateTime.isBefore(DateTime.now()),
+                  )
+                  .length;
         }
 
-        return GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 1.55,
+        return Column(
           children: [
-            _StatCard(
-              label: 'Total Appointments',
-              value: total.toString(),
-              icon: Icons.calendar_month_outlined,
-              iconColor: AppColors.primaryDark,
-              iconBg: const Color(0xFFE6FAF8),
+            Row(
+              children: [
+                Expanded(
+                  child: _StatCard(
+                    label: 'Total Appointments',
+                    value: total.toString(),
+                    icon: Icons.calendar_month_outlined,
+                    iconColor: AppColors.primaryDark,
+                    iconBg: const Color(0xFFE6FAF8),
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: _StatCard(
+                    label: 'Pending Requests',
+                    value: pending.toString(),
+                    icon: Icons.pending_actions_outlined,
+                    iconColor: Colors.orange,
+                    iconBg: Colors.orange.shade50,
+                  ),
+                ),
+              ],
             ),
-            _StatCard(
-              label: 'Pending Requests',
-              value: pending.toString(),
-              icon: Icons.pending_actions_outlined,
-              iconColor: Colors.orange,
-              iconBg: Colors.orange.shade50,
-            ),
-            _StatCard(
-              label: 'Completed Results',
-              value: completed.toString(),
-              icon: Icons.check_circle_outline,
-              iconColor: AppColors.successGreen,
-              iconBg: AppColors.successGreen.withValues(alpha: 0.1),
-            ),
-            _StatCard(
-              label: 'Upcoming',
-              value: upcoming.toString(),
-              icon: Icons.upcoming_outlined,
-              iconColor: Colors.blue,
-              iconBg: Colors.blue.shade50,
+            SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _StatCard(
+                    label: 'Completed Results',
+                    value: completed.toString(),
+                    icon: Icons.check_circle_outline,
+                    iconColor: AppColors.successGreen,
+                    iconBg: AppColors.successGreen.withValues(alpha: 0.1),
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: _StatCard(
+                    label: 'Upcoming',
+                    value: upcoming.toString(),
+                    icon: Icons.upcoming_outlined,
+                    iconColor: Colors.blue,
+                    iconBg: Colors.blue.shade50,
+                  ),
+                ),
+              ],
             ),
           ],
         );

@@ -31,7 +31,7 @@ class RoleSelector extends StatelessWidget {
         width: 90,
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryLight.withOpacity(0.1) : AppColors.surfaceWhite,
+          color: isSelected ? AppColors.primaryLight.withValues(alpha: 0.1) : AppColors.surfaceWhite,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? AppColors.primaryDark : AppColors.inputBorder,

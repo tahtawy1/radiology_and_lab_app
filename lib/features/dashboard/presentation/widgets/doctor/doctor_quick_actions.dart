@@ -14,28 +14,28 @@ class DoctorQuickActions extends StatelessWidget {
         label: 'Pending Requests',
         color: Colors.orange,
         bg: Colors.orange.shade50,
-        onTap: () => context.push(AppStrings.doctorApprovalRoute),
+        onTap: () => context.push(AppStrings.doctorApprovalRoute, extra: {'showBackButton': true}),
       ),
       _ActionItem(
         icon: Icons.science_outlined,
         label: 'Pending Reviews',
         color: Colors.purple,
         bg: Colors.purple.shade50,
-        onTap: () {}, // MVP placeholder
+        onTap: () => context.push(AppStrings.doctorPendingReviewsRoute, extra: {'showBackButton': true}),
       ),
       _ActionItem(
         icon: Icons.fact_check_outlined,
         label: 'Reviewed Results',
         color: AppColors.primaryDark,
         bg: const Color(0xFFE6FAF8),
-        onTap: () {}, // MVP placeholder
+        onTap: () => context.push(AppStrings.servedPatientsResultsRoute),
       ),
       _ActionItem(
         icon: Icons.queue_outlined,
         label: 'Queue Overview',
         color: Colors.blue,
         bg: Colors.blue.shade50,
-        onTap: () {}, // MVP placeholder
+        onTap: () => context.push(AppStrings.queueAdminRoute, extra: {'showBackButton': true}),
       ),
     ];
 

@@ -24,13 +24,13 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   String _mapError(dynamic e) => FirebaseErrorMapper.getMessage(e);
 
   // ── Start real-time stream ─────────────────────────────────────────────────
-  void listenToNotifications(String userId) {
+  void listenToNotifications(String userId, String role) {
     emit(NotificationsLoading());
 
     // Cancel any previous subscription before opening a new one
     _subscription?.cancel();
 
-    _subscription = _getUserNotificationsUseCase(userId).listen(
+    _subscription = _getUserNotificationsUseCase(userId, role).listen(
       (notifications) {
         emit(NotificationsLoaded(notifications: notifications));
       },

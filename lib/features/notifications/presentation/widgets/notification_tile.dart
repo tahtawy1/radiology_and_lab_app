@@ -85,7 +85,7 @@ class NotificationTile extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withValues(alpha: 0.02),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -118,7 +118,7 @@ class NotificationTile extends StatelessWidget {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: style.color.withOpacity(0.1),
+                          color: style.color.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -170,14 +170,6 @@ class NotificationTile extends StatelessWidget {
                                 height: 1.4,
                               ),
                             ),
-                            
-                            // Optional placeholder for action button space
-                            // The user's image has action buttons but without deep links we leave it simple or add a generic one
-                            const SizedBox(height: 12),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: _buildActionButton(style),
-                            ),
                           ],
                         ),
                       ),
@@ -190,58 +182,6 @@ class NotificationTile extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  // Generic action button builder based on the style/type
-  Widget _buildActionButton(_TypeStyle style) {
-    if (notification.type == NotificationType.resultReviewed || 
-        notification.type == NotificationType.resultUploaded) {
-      return ElevatedButton(
-        onPressed: onTap, // Just triggers the read action for now
-        style: ElevatedButton.styleFrom(
-          backgroundColor: style.color,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-          minimumSize: const Size(0, 32),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
-        child: const Text('View Report', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-      );
-    } else if (notification.type == NotificationType.queueCalled) {
-      return OutlinedButton(
-        onPressed: onTap,
-        style: OutlinedButton.styleFrom(
-          foregroundColor: style.color,
-          side: BorderSide(color: style.color.withOpacity(0.5)),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-          minimumSize: const Size(0, 32),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
-        child: const Text('Track Queue', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-      );
-    } else if (notification.type == NotificationType.appointmentApproved) {
-      return OutlinedButton(
-        onPressed: onTap,
-        style: OutlinedButton.styleFrom(
-          foregroundColor: const Color(0xFF475569),
-          side: const BorderSide(color: Color(0xFFCBD5E1)),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-          minimumSize: const Size(0, 32),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
-        child: const Text('Add to Calendar', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-      );
-    }
-    
-    // Default or fallback empty box
-    return const SizedBox.shrink();
   }
 
   // ── Relative time helper ─────────────────────────────────────────────────

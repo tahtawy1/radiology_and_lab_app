@@ -9,7 +9,8 @@ import 'package:radiology_and_lab_app/features/results/presentation/cubit/result
 import 'package:radiology_and_lab_app/shared/widgets/app_snackbar.dart';
 
 class PatientResultsScreen extends StatefulWidget {
-  const PatientResultsScreen({super.key});
+  final bool showBackButton;
+  const PatientResultsScreen({super.key, this.showBackButton = false});
 
   @override
   State<PatientResultsScreen> createState() => _PatientResultsScreenState();
@@ -23,7 +24,6 @@ class _PatientResultsScreenState extends State<PatientResultsScreen> {
   void initState() {
     super.initState();
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    print(uid);
     if (uid != null) {
       context.read<ResultsCubit>().getPatientResults(uid);
     }
@@ -45,20 +45,17 @@ class _PatientResultsScreenState extends State<PatientResultsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => context.pop(),
-        ),
+        automaticallyImplyLeading: false,
+        leading: widget.showBackButton
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () => context.pop(),
+              )
+            : null,
         title: const Text(
           'My Results',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list, color: Colors.black54),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -211,7 +208,7 @@ class _ResultCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -219,17 +216,15 @@ class _ResultCard extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Left accent bar
-              Container(width: 4, color: accentColor),
-
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
-                  child: Column(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border(
+              left: BorderSide(color: accentColor, width: 4),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
+            child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Header row
@@ -324,8 +319,8 @@ class _ResultCard extends StatelessWidget {
                                   vertical: 3,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: _classificationColor().withOpacity(
-                                    0.1,
+                                  color: _classificationColor().withValues(
+                                    alpha: 0.1,
                                   ),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
@@ -472,11 +467,8 @@ class _ResultCard extends StatelessWidget {
                   ),
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
+            ),
+          );
   }
 
   String _formatDate(DateTime date) {
@@ -556,7 +548,7 @@ class _StatBadge extends StatelessWidget {
       margin: const EdgeInsets.only(right: 6),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(

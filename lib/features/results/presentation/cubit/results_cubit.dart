@@ -1,7 +1,4 @@
-import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/errors/exceptions.dart';
 import '../../../../core/services/cloudinary_service.dart';
 import '../../domain/usecases/get_doctor_pending_reviews_usecase.dart';
 import '../../domain/usecases/get_patient_results_usecase.dart';

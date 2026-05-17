@@ -19,7 +19,7 @@ class AdminActionsGrid extends StatelessWidget {
         label: 'Manage Queue',
         color: AppColors.primaryDark,
         bg: const Color(0xFFE6FAF8),
-        onTap: () => context.go(AppStrings.queueAdminRoute),
+        onTap: () => context.push(AppStrings.queueAdminRoute, extra: {'showBackButton': true}),
       ),
       _ActionItem(
         icon: Icons.notifications_active_outlined,
@@ -37,14 +37,7 @@ class AdminActionsGrid extends StatelessWidget {
         label: 'Upload Results',
         color: Colors.purple,
         bg: Colors.purple.shade50,
-        onTap: () {},
-      ),
-      _ActionItem(
-        icon: Icons.assignment_outlined,
-        label: 'Appointments',
-        color: Colors.blue,
-        bg: Colors.blue.shade50,
-        onTap: () {},
+        onTap: () => context.push(AppStrings.servedPatientsResultsRoute),
       ),
     ];
 
@@ -62,7 +55,7 @@ class AdminActionsGrid extends StatelessWidget {
           children: [
             Expanded(child: _QuickActionCard(item: actions[2])),
             const SizedBox(width: 12),
-            Expanded(child: _QuickActionCard(item: actions[3])),
+            const Expanded(child: SizedBox()),
           ],
         ),
       ],

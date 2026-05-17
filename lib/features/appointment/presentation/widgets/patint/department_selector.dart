@@ -69,7 +69,7 @@ class _DepartmentCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -82,7 +82,7 @@ class _DepartmentCard extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF0D9488).withOpacity(0.1)
+                    ? const Color(0xFF0D9488).withValues(alpha: 0.1)
                     : Colors.grey.shade100,
                 shape: BoxShape.circle,
               ),

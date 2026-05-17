@@ -11,7 +11,8 @@ import 'package:radiology_and_lab_app/features/appointment/presentation/widgets/
 import 'package:radiology_and_lab_app/shared/widgets/app_snackbar.dart';
 
 class MyAppointmentsScreen extends StatefulWidget {
-  const MyAppointmentsScreen({super.key});
+  final bool showBackButton;
+  const MyAppointmentsScreen({super.key, this.showBackButton = false});
 
   @override
   State<MyAppointmentsScreen> createState() => _MyAppointmentsScreenState();
@@ -95,10 +96,13 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => context.pop(),
-        ),
+        automaticallyImplyLeading: false,
+        leading: widget.showBackButton
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () => context.pop(),
+              )
+            : null,
         title: const Text(
           'My Appointments',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),

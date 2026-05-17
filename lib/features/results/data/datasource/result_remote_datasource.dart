@@ -155,7 +155,6 @@ class ResultRemoteDataSourceImpl implements ResultRemoteDataSource {
 
       return resultsDoc.docs.map((e) => ResultModel.fromMap(e.data())).toList();
     } on FirebaseException catch (e) {
-      print(e.message);
       throw ServerException(FirebaseErrorMapper.getMessage(e));
     } catch (e) {
       throw e is AppException
@@ -176,14 +175,11 @@ class ResultRemoteDataSourceImpl implements ResultRemoteDataSource {
               .where('reviewedByDoctor', isEqualTo: false)
               .orderBy('createdAt', descending: true)
               .get();
-      print('Failed to fetch pending reviews ${resultsDoc.docs}');
 
       return resultsDoc.docs.map((e) => ResultModel.fromMap(e.data())).toList();
     } on FirebaseException catch (e) {
-      print('Failed to fetch pending reviews $e');
       throw ServerException(FirebaseErrorMapper.getMessage(e));
     } catch (e) {
-      print('Failed to fetch pending reviews $e');
       throw e is AppException
           ? e
           : const ServerException('Failed to fetch pending reviews');

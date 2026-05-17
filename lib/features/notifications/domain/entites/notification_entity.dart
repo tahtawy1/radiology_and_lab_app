@@ -12,7 +12,8 @@ enum NotificationType {
 
 class NotificationEntity {
   final String id;
-  final String userId;
+  final String? userId; // Can be null if it's a role-based broadcast
+  final String? targetRole; // e.g., 'patient', 'doctor', 'admin'
   final String title;
   final String body;
   final NotificationType type;
@@ -21,7 +22,8 @@ class NotificationEntity {
 
   const NotificationEntity({
     required this.id,
-    required this.userId,
+    this.userId,
+    this.targetRole,
     required this.title,
     required this.body,
     required this.type,

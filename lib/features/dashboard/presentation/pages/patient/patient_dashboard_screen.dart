@@ -57,17 +57,14 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
                 greeting: _greeting(),
                 name: widget.user.fullName,
                 roleLabel: '🏥 Patient',
-                showNotification: true,
-                onNotificationTap: () => context.push(AppStrings.notificationsRoute),
                 onAvatarTap: () {},
               ),
             ),
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 100),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   const LiveQueueCard(),
-                  const SizedBox(height: 20),
                   const UpcomingAppointmentCard(),
                   const SizedBox(height: 24),
                   const DashboardSectionTitle(title: 'Statistics'),

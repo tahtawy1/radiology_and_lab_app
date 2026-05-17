@@ -14,7 +14,6 @@ import '../../widgets/admin/admin_actions_grid.dart';
 import '../../widgets/admin/active_queue_preview.dart';
 import '../../widgets/admin/recent_uploads_section.dart';
 
-
 class AdminDashboardScreen extends StatefulWidget {
   final UserEntity user;
   final String department;
@@ -54,8 +53,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 greeting: 'Reception Desk',
                 name: widget.user.fullName,
                 roleLabel: '🏥 ${widget.department} Admin',
-                showNotification: true,
-                onNotificationTap: () => context.push(AppStrings.notificationsRoute),
                 onAvatarTap: () {},
               ),
             ),
@@ -74,7 +71,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   DashboardSectionTitle(
                     title: 'Live Queue Preview',
                     actionLabel: 'Manage',
-                    onAction: () => context.go(AppStrings.queueAdminRoute),
+                    onAction:
+                        () => context.push(
+                          AppStrings.queueAdminRoute,
+                          extra: {'showBackButton': true},
+                        ),
                   ),
                   const SizedBox(height: 14),
                   const ActiveQueuePreview(),
@@ -97,7 +98,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       decoration: BoxDecoration(
         color: AppColors.successGreen.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.successGreen.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: AppColors.successGreen.withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         children: [

@@ -21,22 +21,29 @@ class UpcomingAppointmentCard extends StatelessWidget {
       builder: (context, state) {
         if (state is! AppointmentsLoaded) return const SizedBox.shrink();
 
-        final upcoming = state.appointments
-            .where((a) =>
-                (a.status == AppointmentStatus.pending ||
-                 a.status == AppointmentStatus.confirmed) &&
-                !a.appointmentDateTime.isBefore(
-                    DateTime.now().subtract(const Duration(hours: 1))))
-            .toList();
+        final upcoming =
+            state.appointments
+                .where(
+                  (a) =>
+                      (a.status == AppointmentStatus.pending ||
+                          a.status == AppointmentStatus.confirmed) &&
+                      !a.appointmentDateTime.isBefore(
+                        DateTime.now().subtract(const Duration(hours: 1)),
+                      ),
+                )
+                .toList();
 
         // Sort by closest date
-        upcoming.sort((a, b) => a.appointmentDateTime.compareTo(b.appointmentDateTime));
+        upcoming.sort(
+          (a, b) => a.appointmentDateTime.compareTo(b.appointmentDateTime),
+        );
 
         if (upcoming.isEmpty) return const SizedBox.shrink();
         final next = upcoming.first;
 
         final isConfirmed = next.status == AppointmentStatus.confirmed;
-        final statusColor = isConfirmed ? AppColors.successGreen : Colors.orange;
+        final statusColor =
+            isConfirmed ? AppColors.successGreen : Colors.orange;
         final statusText = isConfirmed ? 'Confirmed' : 'Pending Approval';
 
         return Column(
@@ -45,7 +52,11 @@ class UpcomingAppointmentCard extends StatelessWidget {
             DashboardSectionTitle(
               title: 'Upcoming Appointment',
               actionLabel: 'View All',
-              onAction: () => context.go(AppStrings.myAppointmentsRoute),
+              onAction:
+                  () => context.push(
+                    AppStrings.myAppointmentsRoute,
+                    extra: {'showBackButton': true},
+                  ),
             ),
             const SizedBox(height: 14),
             DashboardCard(
@@ -67,7 +78,10 @@ class UpcomingAppointmentCard extends StatelessWidget {
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: statusColor.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(12),
@@ -84,15 +98,22 @@ class UpcomingAppointmentCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  _InfoRow(icon: Icons.local_hospital_outlined, text: next.department),
+                  _InfoRow(
+                    icon: Icons.local_hospital_outlined,
+                    text: next.department,
+                  ),
                   const SizedBox(height: 6),
                   _InfoRow(
                     icon: Icons.calendar_today_outlined,
-                    text: '${next.appointmentDateTime.day}/${next.appointmentDateTime.month}/${next.appointmentDateTime.year}',
+                    text:
+                        '${next.appointmentDateTime.day}/${next.appointmentDateTime.month}/${next.appointmentDateTime.year}',
                   ),
                   if (next.doctorName.isNotEmpty) ...[
                     const SizedBox(height: 6),
-                    _InfoRow(icon: Icons.person_outline, text: 'Dr. ${next.doctorName}'),
+                    _InfoRow(
+                      icon: Icons.person_outline,
+                      text: 'Dr. ${next.doctorName}',
+                    ),
                   ],
                 ],
               ),
@@ -118,10 +139,7 @@ class _InfoRow extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           text,
-          style: const TextStyle(
-            fontSize: 13,
-            color: AppColors.textSecondary,
-          ),
+          style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
         ),
       ],
     );

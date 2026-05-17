@@ -5,7 +5,7 @@ abstract class NotificationRepository {
   Future<void> sendNotification(NotificationEntity notification);
 
   /// Stream of this user's notifications, ordered newest-first.
-  Stream<List<NotificationEntity>> getUserNotifications(String userId);
+  Stream<List<NotificationEntity>> getUserNotifications(String userId, String role);
 
   /// Flip isRead to true for a single document.
   Future<void> markAsRead(String notificationId);

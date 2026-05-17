@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:radiology_and_lab_app/core/constants/app_colors.dart';
-import 'package:radiology_and_lab_app/features/splash/presentation/view/splash_view.dart';
 import 'package:radiology_and_lab_app/features/splash/presentation/widgets/centre_content.dart';
 import 'package:radiology_and_lab_app/features/splash/presentation/widgets/decorative_orbs.dart';
 import 'package:radiology_and_lab_app/features/splash/presentation/widgets/page_indicator.dart';

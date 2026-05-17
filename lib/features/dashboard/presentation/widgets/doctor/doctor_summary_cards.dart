@@ -14,43 +14,54 @@ class DoctorSummaryCards extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AppointmentCubit, AppointmentState>(
       builder: (context, state) {
-        final pendingCount = state is AppointmentsLoaded ? state.appointments.length : 0;
+        final pendingCount =
+            state is AppointmentsLoaded ? state.appointments.length : 0;
 
-        return GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 1.55,
+        return Column(
           children: [
-            _StatCard(
-              label: 'Pending Reviews',
-              value: pendingCount.toString(),
-              icon: Icons.pending_actions_outlined,
-              iconColor: Colors.orange,
-              iconBg: Colors.orange.shade50,
+            Row(
+              children: [
+                Expanded(
+                  child: _StatCard(
+                    label: 'Pending Reviews',
+                    value: pendingCount.toString(),
+                    icon: Icons.pending_actions_outlined,
+                    iconColor: Colors.orange,
+                    iconBg: Colors.orange.shade50,
+                  ),
+                ),
+                Expanded(
+                  child: _StatCard(
+                    label: 'Approved Today',
+                    value: '—', // MVP placeholder
+                    icon: Icons.check_circle_outline,
+                    iconColor: AppColors.successGreen,
+                    iconBg: AppColors.successGreen.withValues(alpha: 0.1),
+                  ),
+                ),
+              ],
             ),
-            _StatCard(
-              label: 'Approved Today',
-              value: '—', // MVP placeholder
-              icon: Icons.check_circle_outline,
-              iconColor: AppColors.successGreen,
-              iconBg: AppColors.successGreen.withValues(alpha: 0.1),
-            ),
-            _StatCard(
-              label: 'Reviewed Results',
-              value: '—', // MVP placeholder
-              icon: Icons.fact_check_outlined,
-              iconColor: AppColors.primaryDark,
-              iconBg: const Color(0xFFE6FAF8),
-            ),
-            _StatCard(
-              label: 'Critical Cases',
-              value: '—', // MVP placeholder
-              icon: Icons.warning_amber_outlined,
-              iconColor: AppColors.errorRed,
-              iconBg: AppColors.errorBackground,
+            Row(
+              children: [
+                Expanded(
+                  child: _StatCard(
+                    label: 'Reviewed Results',
+                    value: '—', // MVP placeholder
+                    icon: Icons.fact_check_outlined,
+                    iconColor: AppColors.primaryDark,
+                    iconBg: const Color(0xFFE6FAF8),
+                  ),
+                ),
+                Expanded(
+                  child: _StatCard(
+                    label: 'Critical Cases',
+                    value: '—', // MVP placeholder
+                    icon: Icons.warning_amber_outlined,
+                    iconColor: AppColors.errorRed,
+                    iconBg: AppColors.errorBackground,
+                  ),
+                ),
+              ],
             ),
           ],
         );
@@ -112,4 +123,3 @@ class _StatCard extends StatelessWidget {
     );
   }
 }
-

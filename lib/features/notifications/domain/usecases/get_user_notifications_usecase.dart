@@ -6,6 +6,6 @@ class GetUserNotificationsUseCase {
 
   const GetUserNotificationsUseCase(this._repository);
 
-  Stream<List<NotificationEntity>> call(String userId) =>
-      _repository.getUserNotifications(userId);
+  Stream<List<NotificationEntity>> call(String userId, String role) =>
+      _repository.getUserNotifications(userId, role);
 }

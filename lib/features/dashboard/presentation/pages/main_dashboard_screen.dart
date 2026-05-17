@@ -13,14 +13,19 @@ import 'package:radiology_and_lab_app/features/appointment/presentation/pages/do
 import 'package:radiology_and_lab_app/features/queue/presentation/cubit/queue_admin_cubit.dart';
 import 'package:radiology_and_lab_app/features/queue/presentation/cubit/queue_patient_cubit.dart';
 import 'package:radiology_and_lab_app/features/queue/presentation/pages/admin/queue_admin_screen.dart';
-import 'package:radiology_and_lab_app/features/dashboard/presentation/pages/doctor/doctor_notifications_screen.dart';
+import 'package:radiology_and_lab_app/features/notifications/presentation/cubit/notifications_cubit.dart';
+import 'package:radiology_and_lab_app/features/notifications/presentation/pages/notifications_screen.dart';
+import 'package:radiology_and_lab_app/features/results/presentation/cubit/results_cubit.dart';
+import 'package:radiology_and_lab_app/features/results/presentation/pages/patient/patient_results_screen.dart';
+import 'package:radiology_and_lab_app/features/results/presentation/pages/doctor/doctor_pending_reviews_screen.dart';
+import 'package:radiology_and_lab_app/features/results/presentation/pages/admin/served_patients_results_screen.dart';
 
 import '../cubit/navigation_cubit.dart';
 import '../cubit/navigation_state.dart';
 
 import 'patient/patient_dashboard_screen.dart';
 import 'doctor/doctor_dashboard_screen.dart';
-import 'admin/admin_dashboard_screen.dart';
+import 'patient/admin/admin_dashboard_screen.dart';
 
 class MainDashboardScreen extends StatelessWidget {
   final UserEntity user;
@@ -56,6 +61,10 @@ class _PatientShell extends StatelessWidget {
         ),
         BlocProvider<QueuePatientCubit>(
           create: (_) => getIt<QueuePatientCubit>(),
+        ),
+        BlocProvider<ResultsCubit>(create: (_) => getIt<ResultsCubit>()),
+        BlocProvider<NotificationsCubit>(
+          create: (_) => getIt<NotificationsCubit>(),
         ),
       ],
       child: _PatientScaffold(user: user),
@@ -104,11 +113,14 @@ class _PatientScaffold extends StatelessWidget {
             value: context.read<AppointmentCubit>(),
             child: const MyAppointmentsScreen(),
           ),
-          const _PlaceholderTab(
-            label: 'Results\nComing Soon',
-            icon: Icons.science_outlined,
+          BlocProvider<ResultsCubit>.value(
+            value: context.read<ResultsCubit>(),
+            child: const PatientResultsScreen(),
           ),
-          const DoctorNotificationsScreen(),
+          BlocProvider<NotificationsCubit>.value(
+            value: context.read<NotificationsCubit>(),
+            child: const NotificationsScreen(),
+          ),
           _ProfileTab(user: user),
         ];
 
@@ -141,6 +153,10 @@ class _DoctorShell extends StatelessWidget {
         BlocProvider<NavigationCubit>(create: (_) => NavigationCubit()),
         BlocProvider<AppointmentCubit>(
           create: (_) => getIt<AppointmentCubit>(),
+        ),
+        BlocProvider<ResultsCubit>(create: (_) => getIt<ResultsCubit>()),
+        BlocProvider<NotificationsCubit>(
+          create: (_) => getIt<NotificationsCubit>(),
         ),
       ],
       child: _DoctorScaffold(user: user),
@@ -185,15 +201,18 @@ class _DoctorScaffold extends StatelessWidget {
 
         final screens = [
           DoctorDashboardScreen(user: user),
-          const _PlaceholderTab(
-            label: 'Reviews\nComing Soon',
-            icon: Icons.rate_review_outlined,
+          BlocProvider<ResultsCubit>.value(
+            value: context.read<ResultsCubit>(),
+            child: const DoctorPendingReviewsScreen(),
           ),
           BlocProvider<AppointmentCubit>.value(
             value: context.read<AppointmentCubit>(),
             child: const DoctorApprovalScreen(),
           ),
-          const DoctorNotificationsScreen(),
+          BlocProvider<NotificationsCubit>.value(
+            value: context.read<NotificationsCubit>(),
+            child: const NotificationsScreen(),
+          ),
           _ProfileTab(user: user),
         ];
 
@@ -228,6 +247,7 @@ class _AdminShell extends StatelessWidget {
         BlocProvider<AppointmentCubit>(
           create: (_) => getIt<AppointmentCubit>(),
         ),
+        BlocProvider<ResultsCubit>(create: (_) => getIt<ResultsCubit>()),
       ],
       child: _AdminScaffold(user: user),
     );
@@ -251,11 +271,6 @@ class _AdminScaffold extends StatelessWidget {
       label: 'Results',
     ),
     _TabItem(
-      icon: Icons.assessment_outlined,
-      activeIcon: Icons.assessment,
-      label: 'Reports',
-    ),
-    _TabItem(
       icon: Icons.person_outline,
       activeIcon: Icons.person,
       label: 'Profile',
@@ -275,34 +290,16 @@ class _AdminScaffold extends StatelessWidget {
             value: context.read<QueueAdminCubit>(),
             child: const QueueAdminView(),
           ),
-          const _PlaceholderTab(
-            label: 'Results\nComing Soon',
-            icon: Icons.science_outlined,
-          ),
-          const _PlaceholderTab(
-            label: 'Reports\nComing Soon',
-            icon: Icons.assessment_outlined,
+          BlocProvider<ResultsCubit>.value(
+            value: context.read<ResultsCubit>(),
+            child: const ServedPatientsResultsScreen(),
           ),
           _ProfileTab(user: user),
         ];
 
         return Scaffold(
           body: IndexedStack(index: currentIndex, children: screens),
-          floatingActionButton: FloatingActionButton(
-            backgroundColor: AppColors.primaryDark,
-            elevation: 6,
-            shape: const CircleBorder(),
-            onPressed: () {
-              // MVP: Upload result action placeholder
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Upload Result — coming soon')),
-              );
-            },
-            child: const Icon(Icons.upload_file, color: Colors.white, size: 26),
-          ),
-          floatingActionButtonLocation:
-              FloatingActionButtonLocation.centerDocked,
-          bottomNavigationBar: _AdminBottomNav(
+          bottomNavigationBar: _AppBottomNav(
             tabs: _tabs,
             currentIndex: currentIndex,
             onTap: (i) => context.read<NavigationCubit>().goToTab(i),
@@ -394,87 +391,6 @@ class _AppBottomNav extends StatelessWidget {
               );
             }),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SHARED: Admin Bottom Navigation Bar (with FAB notch)
-// ─────────────────────────────────────────────────────────────────────────────
-class _AdminBottomNav extends StatelessWidget {
-  final List<_TabItem> tabs;
-  final int currentIndex;
-  final ValueChanged<int> onTap;
-
-  const _AdminBottomNav({
-    required this.tabs,
-    required this.currentIndex,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return BottomAppBar(
-      shape: const CircularNotchedRectangle(),
-      notchMargin: 8.0,
-      color: Colors.white,
-      elevation: 12,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            // First two tabs
-            _buildNavItem(0),
-            _buildNavItem(1),
-            // Gap for FAB
-            const SizedBox(width: 48),
-            // Last two tabs
-            _buildNavItem(3),
-            _buildNavItem(4),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(int index) {
-    final tab = tabs[index];
-    final isActive = index == currentIndex;
-    return GestureDetector(
-      onTap: () => onTap(index),
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color:
-              isActive
-                  ? AppColors.primaryDark.withValues(alpha: 0.1)
-                  : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isActive ? tab.activeIcon : tab.icon,
-              color: isActive ? AppColors.primaryDark : AppColors.textSecondary,
-              size: 22,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              tab.label,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
-                color:
-                    isActive ? AppColors.primaryDark : AppColors.textSecondary,
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -668,35 +584,4 @@ class _TabItem {
     required this.activeIcon,
     required this.label,
   });
-}
-
-class _PlaceholderTab extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  const _PlaceholderTab({required this.label, required this.icon});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 48, color: AppColors.textSecondary),
-            const SizedBox(height: 16),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

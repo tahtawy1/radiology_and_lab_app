@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../errors/exceptions.dart';
@@ -25,11 +27,17 @@ class FirebaseErrorMapper {
         case 'invalid-credential':
           return 'Login failed. Please check your email and password.';
         default:
-          return exception.message ?? 'Authentication failed. Please try again.';
+          return exception.message ??
+              'Authentication failed. Please try again.';
       }
     }
 
     if (exception is FirebaseException) {
+      log(
+        'FirebaseException [${exception.code}]: ${exception.message}',
+        name: 'FirebaseErrorMapper',
+      );
+
       switch (exception.code) {
         case 'permission-denied':
           return 'You do not have permission to perform this action.';
@@ -41,7 +49,13 @@ class FirebaseErrorMapper {
           return 'This record already exists.';
         case 'deadline-exceeded':
           return 'The request timed out. Please try again.';
+        case 'failed-precondition':
+          return exception.message ?? 'Missing database index. Check console.';
         default:
+          log(
+            'FirebaseException [${exception.code}]: ${exception.message}',
+            name: 'FirebaseErrorMapper',
+          );
           return 'A database error occurred. Please try again.';
       }
     }

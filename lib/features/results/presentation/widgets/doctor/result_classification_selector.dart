@@ -66,7 +66,7 @@ class ResultClassificationSelector extends StatelessWidget {
                     duration: const Duration(milliseconds: 200),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
-                      color: isSelected ? color.withOpacity(0.12) : Colors.grey.shade50,
+                      color: isSelected ? color.withValues(alpha: 0.12) : Colors.grey.shade50,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: isSelected ? color : Colors.grey.shade200,

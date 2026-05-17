@@ -55,9 +55,6 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                 greeting: _greeting(),
                 name: 'Dr. ${widget.user.fullName}',
                 roleLabel: '🩺 Doctor',
-                showNotification: true,
-                onNotificationTap:
-                    () => context.push(AppStrings.notificationsRoute),
                 onAvatarTap: () {},
               ),
             ),
@@ -75,7 +72,10 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                     title: 'Pending Requests',
                     actionLabel: 'See All',
                     onAction:
-                        () => context.push(AppStrings.doctorApprovalRoute),
+                        () => context.push(
+                          AppStrings.doctorApprovalRoute,
+                          extra: {'showBackButton': true},
+                        ),
                   ),
                   const SizedBox(height: 14),
                   const PendingRequestsSection(),

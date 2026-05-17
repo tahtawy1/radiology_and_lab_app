@@ -4,7 +4,8 @@ import '../../domain/entites/notification_entity.dart';
 class NotificationModel extends NotificationEntity {
   NotificationModel({
     required super.id,
-    required super.userId,
+    super.userId,
+    super.targetRole,
     required super.title,
     required super.body,
     required super.type,
@@ -16,7 +17,8 @@ class NotificationModel extends NotificationEntity {
   factory NotificationModel.fromMap(Map<String, dynamic> map) {
     return NotificationModel(
       id: map['id'] as String? ?? '',
-      userId: map['userId'] as String? ?? '',
+      userId: map['userId'] as String?,
+      targetRole: map['targetRole'] as String?,
       title: map['title'] as String? ?? '',
       body: map['body'] as String? ?? '',
       type: _typeFromString(map['type'] as String? ?? ''),
@@ -33,6 +35,7 @@ class NotificationModel extends NotificationEntity {
     return NotificationModel(
       id: entity.id,
       userId: entity.userId,
+      targetRole: entity.targetRole,
       title: entity.title,
       body: entity.body,
       type: entity.type,
@@ -45,7 +48,8 @@ class NotificationModel extends NotificationEntity {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'userId': userId,
+      if (userId != null) 'userId': userId,
+      if (targetRole != null) 'targetRole': targetRole,
       'title': title,
       'body': body,
       'type': _typeToString(type),
@@ -58,6 +62,7 @@ class NotificationModel extends NotificationEntity {
   NotificationModel copyWith({
     String? id,
     String? userId,
+    String? targetRole,
     String? title,
     String? body,
     NotificationType? type,
@@ -67,6 +72,7 @@ class NotificationModel extends NotificationEntity {
     return NotificationModel(
       id: id ?? this.id,
       userId: userId ?? this.userId,
+      targetRole: targetRole ?? this.targetRole,
       title: title ?? this.title,
       body: body ?? this.body,
       type: type ?? this.type,
