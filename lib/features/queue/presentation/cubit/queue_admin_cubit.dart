@@ -6,6 +6,7 @@ import '../../domain/usecases/check_in_patient_usecase.dart';
 import '../../domain/usecases/call_next_patient_usecase.dart';
 import '../../domain/usecases/mark_queue_served_usecase.dart';
 import '../../domain/usecases/mark_queue_no_show_usecase.dart';
+import '../../../../core/errors/firebase_error_mapper.dart';
 import 'queue_admin_state.dart';
 
 class QueueAdminCubit extends Cubit<QueueAdminState> {
@@ -23,12 +24,9 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
     required this.markQueueNoShowUseCase,
   }) : super(QueueAdminInitial());
 
-  // ── Failure mapper ─────────────────────────────────────────────────────────
-  Failure _mapExceptionToFailure(dynamic e) {
-    if (e is ValidationException) return ValidationFailure(e.message);
-    if (e is NetworkException) return NetworkFailure(e.message);
-    if (e is ServerException) return ServerFailure(e.message);
-    return ServerFailure(e.toString());
+  // ── Error Message mapper ───────────────────────────────────────────────────
+  String _mapExceptionToMessage(dynamic e) {
+    return FirebaseErrorMapper.getMessage(e);
   }
 
   // ── Fetch Queue ────────────────────────────────────────────────────────────
@@ -49,7 +47,7 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
         served: served,
       ));
     } catch (e) {
-      emit(QueueAdminError(_mapExceptionToFailure(e).message));
+      emit(QueueAdminError(_mapExceptionToMessage(e)));
     }
   }
 
@@ -66,7 +64,7 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
       emit(QueueAdminActionSuccess('Patient checked in successfully'));
       await fetchQueue(department: department);
     } catch (e) {
-      emit(QueueAdminError(_mapExceptionToFailure(e).message));
+      emit(QueueAdminError(_mapExceptionToMessage(e)));
     }
   }
 
@@ -77,7 +75,7 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
       emit(QueueAdminActionSuccess('Next patient called'));
       await fetchQueue(department: department);
     } catch (e) {
-      emit(QueueAdminError(_mapExceptionToFailure(e).message));
+      emit(QueueAdminError(_mapExceptionToMessage(e)));
     }
   }
 
@@ -91,7 +89,7 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
       emit(QueueAdminActionSuccess('Patient marked as served'));
       await fetchQueue(department: department);
     } catch (e) {
-      emit(QueueAdminError(_mapExceptionToFailure(e).message));
+      emit(QueueAdminError(_mapExceptionToMessage(e)));
     }
   }
 
@@ -105,7 +103,7 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
       emit(QueueAdminActionSuccess('Patient marked as no-show'));
       await fetchQueue(department: department);
     } catch (e) {
-      emit(QueueAdminError(_mapExceptionToFailure(e).message));
+      emit(QueueAdminError(_mapExceptionToMessage(e)));
     }
   }
 }

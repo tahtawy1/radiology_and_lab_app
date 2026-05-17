@@ -5,6 +5,7 @@ import '../../domain/usecases/sign_in_usecase.dart';
 import '../../domain/usecases/sign_up_usecase.dart';
 import '../../domain/usecases/sign_out_usecase.dart';
 import '../../domain/usecases/get_current_user_usecase.dart';
+import '../../../../core/errors/firebase_error_mapper.dart';
 import 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
@@ -20,18 +21,9 @@ class AuthCubit extends Cubit<AuthState> {
     required this.getCurrentUserUseCase,
   }) : super(AuthInitial());
 
-  // ── Failure mapper ─────────────────────────────────────────────────────────
-  Failure _mapExceptionToFailure(dynamic e) {
-    if (e is AuthException) {
-      return AuthFailure(e.message);
-    } else if (e is ValidationException) {
-      return ValidationFailure(e.message);
-    } else if (e is NetworkException) {
-      return NetworkFailure(e.message);
-    } else if (e is ServerException) {
-      return ServerFailure(e.message);
-    }
-    return ServerFailure(e.toString());
+  // ── Error Message mapper ───────────────────────────────────────────────────
+  String _mapExceptionToMessage(dynamic e) {
+    return FirebaseErrorMapper.getMessage(e);
   }
 
   // ── Check Auth Status ──────────────────────────────────────────────────────
@@ -45,8 +37,8 @@ class AuthCubit extends Cubit<AuthState> {
         emit(Unauthenticated());
       }
     } catch (e) {
-      final failure = _mapExceptionToFailure(e);
-      emit(AuthError(failure.message));
+      final message = _mapExceptionToMessage(e);
+      emit(AuthError(message));
     }
   }
 
@@ -61,8 +53,8 @@ class AuthCubit extends Cubit<AuthState> {
       final user = await signInUseCase(email, password, selectedRole);
       emit(Authenticated(user));
     } catch (e) {
-      final failure = _mapExceptionToFailure(e);
-      emit(AuthError(failure.message));
+      final message = _mapExceptionToMessage(e);
+      emit(AuthError(message));
     }
   }
 
@@ -85,8 +77,8 @@ class AuthCubit extends Cubit<AuthState> {
       );
       emit(Authenticated(user));
     } catch (e) {
-      final failure = _mapExceptionToFailure(e);
-      emit(AuthError(failure.message));
+      final message = _mapExceptionToMessage(e);
+      emit(AuthError(message));
     }
   }
 
@@ -97,8 +89,8 @@ class AuthCubit extends Cubit<AuthState> {
       await signOutUseCase();
       emit(Unauthenticated());
     } catch (e) {
-      final failure = _mapExceptionToFailure(e);
-      emit(AuthError(failure.message));
+      final message = _mapExceptionToMessage(e);
+      emit(AuthError(message));
     }
   }
 }

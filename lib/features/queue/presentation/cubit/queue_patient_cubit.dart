@@ -4,6 +4,7 @@ import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/failures.dart';
 import '../../domain/usecases/watch_patient_queue_entry_usecase.dart';
 import '../../domain/usecases/get_patients_ahead_usecase.dart';
+import '../../../../core/errors/firebase_error_mapper.dart';
 import 'queue_patient_state.dart';
 
 class QueuePatientCubit extends Cubit<QueuePatientState> {
@@ -16,12 +17,9 @@ class QueuePatientCubit extends Cubit<QueuePatientState> {
     required this.getPatientsAheadUseCase,
   }) : super(QueuePatientInitial());
 
-  // ── Failure mapper ─────────────────────────────────────────────────────────
-  Failure _mapExceptionToFailure(dynamic e) {
-    if (e is ValidationException) return ValidationFailure(e.message);
-    if (e is NetworkException) return NetworkFailure(e.message);
-    if (e is ServerException) return ServerFailure(e.message);
-    return ServerFailure(e.toString());
+  // ── Error Message mapper ───────────────────────────────────────────────────
+  String _mapExceptionToMessage(dynamic e) {
+    return FirebaseErrorMapper.getMessage(e);
   }
 
   // ── Watch Patient Queue ────────────────────────────────────────────────────
@@ -48,7 +46,7 @@ class QueuePatientCubit extends Cubit<QueuePatientState> {
             }
           },
           onError: (e) {
-            emit(QueuePatientError(_mapExceptionToFailure(e).message));
+            emit(QueuePatientError(_mapExceptionToMessage(e)));
           },
         );
   }

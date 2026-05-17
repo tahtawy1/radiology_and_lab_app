@@ -8,6 +8,7 @@ import '../../domain/usecases/get_patient_results_usecase.dart';
 import '../../domain/usecases/review_result_usecase.dart';
 import '../../domain/usecases/upload_result_usecase.dart';
 import '../../domain/usecases/get_served_patients_usecase.dart';
+import '../../../../core/errors/firebase_error_mapper.dart';
 import 'results_state.dart';
 
 class ResultsCubit extends Cubit<ResultsState> {
@@ -28,10 +29,7 @@ class ResultsCubit extends Cubit<ResultsState> {
   }) : super(ResultsInitial());
 
   String _mapExceptionToMessage(dynamic e) {
-    if (e is ValidationException) return e.message;
-    if (e is NetworkException) return e.message;
-    if (e is ServerException) return e.message;
-    return e.toString();
+    return FirebaseErrorMapper.getMessage(e);
   }
 
   // ── Upload Result ──────────────────────────────────────────────────────────

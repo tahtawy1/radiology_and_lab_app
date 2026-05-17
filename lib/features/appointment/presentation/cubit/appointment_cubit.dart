@@ -12,6 +12,7 @@ import 'package:radiology_and_lab_app/features/appointment/domain/usecases/get_p
 import 'package:radiology_and_lab_app/features/appointment/domain/usecases/get_pending_appointments_for_doctor_usecase.dart';
 import 'package:radiology_and_lab_app/features/appointment/domain/usecases/update_appointment_status_usecase.dart';
 import 'package:radiology_and_lab_app/features/appointment/domain/usecases/update_queue_status_usecase.dart';
+import '../../../../core/errors/firebase_error_mapper.dart';
 import 'appointment_state.dart';
 
 class AppointmentCubit extends Cubit<AppointmentState> {
@@ -36,12 +37,9 @@ class AppointmentCubit extends Cubit<AppointmentState> {
     required this.getPendingAppointmentsForDoctorUseCase,
   }) : super(AppointmentInitial());
 
-  // ── Failure mapper ─────────────────────────────────────────────────────────
-  Failure _mapExceptionToFailure(dynamic e) {
-    if (e is ValidationException) return ValidationFailure(e.message);
-    if (e is NetworkException) return NetworkFailure(e.message);
-    if (e is ServerException) return ServerFailure(e.message);
-    return ServerFailure(e.toString());
+  // ── Error Message mapper ───────────────────────────────────────────────────
+  String _mapExceptionToMessage(dynamic e) {
+    return FirebaseErrorMapper.getMessage(e);
   }
 
   // ── Book Appointment ───────────────────────────────────────────────────────
@@ -51,7 +49,7 @@ class AppointmentCubit extends Cubit<AppointmentState> {
       await bookAppointmentUseCase(appointment);
       emit(AppointmentBookedSuccess());
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToFailure(e).message));
+      emit(AppointmentError(_mapExceptionToMessage(e)));
     }
   }
 
@@ -62,7 +60,7 @@ class AppointmentCubit extends Cubit<AppointmentState> {
       final appointments = await getPatientAppointmentsUseCase(patientId);
       emit(AppointmentsLoaded(appointments: appointments));
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToFailure(e).message));
+      emit(AppointmentError(_mapExceptionToMessage(e)));
     }
   }
 
@@ -75,7 +73,7 @@ class AppointmentCubit extends Cubit<AppointmentState> {
       );
       emit(AppointmentsLoaded(appointments: appointments));
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToFailure(e).message));
+      emit(AppointmentError(_mapExceptionToMessage(e)));
     }
   }
 
@@ -89,7 +87,7 @@ class AppointmentCubit extends Cubit<AppointmentState> {
       );
       emit(AppointmentStatusUpdatedSuccess());
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToFailure(e).message));
+      emit(AppointmentError(_mapExceptionToMessage(e)));
     }
   }
 
@@ -103,7 +101,7 @@ class AppointmentCubit extends Cubit<AppointmentState> {
       );
       emit(AppointmentStatusUpdatedSuccess());
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToFailure(e).message));
+      emit(AppointmentError(_mapExceptionToMessage(e)));
     }
   }
 
@@ -114,7 +112,7 @@ class AppointmentCubit extends Cubit<AppointmentState> {
       final appointments = await getAllAppointmentsUseCase();
       emit(AppointmentsLoaded(appointments: appointments));
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToFailure(e).message));
+      emit(AppointmentError(_mapExceptionToMessage(e)));
     }
   }
 
@@ -125,7 +123,7 @@ class AppointmentCubit extends Cubit<AppointmentState> {
       await cancelAppointmentUseCase(appointmentId);
       emit(AppointmentCancelledSuccess());
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToFailure(e).message));
+      emit(AppointmentError(_mapExceptionToMessage(e)));
     }
   }
 
@@ -142,7 +140,7 @@ class AppointmentCubit extends Cubit<AppointmentState> {
       );
       emit(AppointmentStatusUpdatedSuccess());
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToFailure(e).message));
+      emit(AppointmentError(_mapExceptionToMessage(e)));
     }
   }
 
@@ -153,7 +151,7 @@ class AppointmentCubit extends Cubit<AppointmentState> {
       final doctors = await getDoctorsUseCase();
       emit(DoctorsLoaded(doctors));
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToFailure(e).message));
+      emit(AppointmentError(_mapExceptionToMessage(e)));
     }
   }
 
@@ -172,7 +170,7 @@ class AppointmentCubit extends Cubit<AppointmentState> {
         AppointmentStatusUpdatedSuccess(),
       ); // Reuse same success state for simplicity
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToFailure(e).message));
+      emit(AppointmentError(_mapExceptionToMessage(e)));
     }
   }
 }
