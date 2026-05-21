@@ -4,6 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:radiology_and_lab_app/core/constants/app_colors.dart';
 import 'package:radiology_and_lab_app/features/appointment/presentation/cubit/appointment_cubit.dart';
 import 'package:radiology_and_lab_app/features/appointment/presentation/cubit/appointment_state.dart';
+import 'package:radiology_and_lab_app/features/results/presentation/cubit/results_cubit.dart';
+import 'package:radiology_and_lab_app/features/results/presentation/cubit/results_state.dart';
+import 'package:radiology_and_lab_app/features/appointment/domain/entites/appointment_enums.dart';
 
 import '../shared/dashboard_card.dart';
 
@@ -13,57 +16,70 @@ class DoctorSummaryCards extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AppointmentCubit, AppointmentState>(
-      builder: (context, state) {
-        final pendingCount =
-            state is AppointmentsLoaded ? state.appointments.length : 0;
+      builder: (context, appState) {
+        return BlocBuilder<ResultsCubit, ResultsState>(
+          builder: (context, resultsState) {
+            final pendingCount = appState.pendingDoctorAppointments.length;
 
-        return Column(
-          children: [
-            Row(
+            final now = DateTime.now();
+            final approvedToday = appState.appointments.where((a) {
+              final isApproved = a.status == AppointmentStatus.confirmed || a.status == AppointmentStatus.completed;
+              final isToday = a.updatedAt.year == now.year && a.updatedAt.month == now.month && a.updatedAt.day == now.day;
+              return isApproved && isToday;
+            }).length;
+
+            final reviewedCount = resultsState.results.where((r) => r.reviewedByDoctor).length;
+            final criticalCount = resultsState.results.where((r) => r.classification?.toLowerCase() == 'critical').length;
+
+            return Column(
               children: [
-                Expanded(
-                  child: _StatCard(
-                    label: 'Pending Reviews',
-                    value: pendingCount.toString(),
-                    icon: Icons.pending_actions_outlined,
-                    iconColor: Colors.orange,
-                    iconBg: Colors.orange.shade50,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _StatCard(
+                        label: 'Pending Reviews',
+                        value: pendingCount.toString(),
+                        icon: Icons.pending_actions_outlined,
+                        iconColor: Colors.orange,
+                        iconBg: Colors.orange.shade50,
+                      ),
+                    ),
+                    Expanded(
+                      child: _StatCard(
+                        label: 'Approved Today',
+                        value: approvedToday.toString(),
+                        icon: Icons.check_circle_outline,
+                        iconColor: AppColors.successGreen,
+                        iconBg: AppColors.successGreen.withValues(alpha: 0.1),
+                      ),
+                    ),
+                  ],
                 ),
-                Expanded(
-                  child: _StatCard(
-                    label: 'Approved Today',
-                    value: '—', // MVP placeholder
-                    icon: Icons.check_circle_outline,
-                    iconColor: AppColors.successGreen,
-                    iconBg: AppColors.successGreen.withValues(alpha: 0.1),
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _StatCard(
+                        label: 'Reviewed Results',
+                        value: reviewedCount.toString(),
+                        icon: Icons.fact_check_outlined,
+                        iconColor: AppColors.primaryDark,
+                        iconBg: const Color(0xFFE6FAF8),
+                      ),
+                    ),
+                    Expanded(
+                      child: _StatCard(
+                        label: 'Critical Cases',
+                        value: criticalCount.toString(),
+                        icon: Icons.warning_amber_outlined,
+                        iconColor: AppColors.errorRed,
+                        iconBg: AppColors.errorBackground,
+                      ),
+                    ),
+                  ],
                 ),
               ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: _StatCard(
-                    label: 'Reviewed Results',
-                    value: '—', // MVP placeholder
-                    icon: Icons.fact_check_outlined,
-                    iconColor: AppColors.primaryDark,
-                    iconBg: const Color(0xFFE6FAF8),
-                  ),
-                ),
-                Expanded(
-                  child: _StatCard(
-                    label: 'Critical Cases',
-                    value: '—', // MVP placeholder
-                    icon: Icons.warning_amber_outlined,
-                    iconColor: AppColors.errorRed,
-                    iconBg: AppColors.errorBackground,
-                  ),
-                ),
-              ],
-            ),
-          ],
+            );
+          },
         );
       },
     );

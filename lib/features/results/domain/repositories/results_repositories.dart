@@ -19,5 +19,7 @@ abstract class ResultsRepository {
 
   Stream<List<ResultEntity>> getDoctorPendingReviews({required String doctorId});
 
+  Stream<List<ResultEntity>> getResultsForDoctor({required String doctorId});
+
   Stream<List<AppointmentEntity>> getServedPatients();
 }

@@ -64,6 +64,15 @@ class AppointmentRepositoryImpl implements AppointmentRepository {
   }
 
   @override
+  Stream<List<AppointmentEntity>> getAppointmentsForDoctor(String doctorId) {
+    try {
+      return remoteDataSource.getAppointmentsForDoctor(doctorId);
+    } on AppException {
+      rethrow;
+    }
+  }
+
+  @override
   Future<void> updateAppointmentStatus({
     required String appointmentId,
     required AppointmentStatus status,

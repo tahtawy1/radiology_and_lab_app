@@ -41,10 +41,16 @@ class _DoctorPendingReviewsScreenState
         backgroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
-        leading: widget.showBackButton
+        leading: (widget.showBackButton || context.canPop())
             ? IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () => context.pop(),
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go(AppStrings.dashboardRoute, extra: UserSessionService.currentUser);
+                  }
+                },
               )
             : null,
         title: const Text(

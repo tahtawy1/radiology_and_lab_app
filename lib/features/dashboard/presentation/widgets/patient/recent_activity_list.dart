@@ -15,7 +15,7 @@ class RecentActivityList extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AppointmentCubit, AppointmentState>(
       builder: (context, state) {
-        if (state is! AppointmentsLoaded || state.appointments.isEmpty) {
+        if (state.appointments.isEmpty) {
           return const EmptyStateWidget(
             message: 'No recent activity',
             icon: Icons.inbox_outlined,

@@ -49,6 +49,11 @@ class ResultsRepositoryImpl implements ResultsRepository {
   }
 
   @override
+  Stream<List<ResultEntity>> getResultsForDoctor({required String doctorId}) {
+    return remoteDataSource.getResultsForDoctor(doctorId: doctorId);
+  }
+
+  @override
   Stream<List<AppointmentEntity>> getServedPatients() {
     return remoteDataSource.getServedPatients();
   }

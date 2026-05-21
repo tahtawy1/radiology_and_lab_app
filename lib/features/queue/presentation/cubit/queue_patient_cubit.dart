@@ -22,9 +22,12 @@ class QueuePatientCubit extends Cubit<QueuePatientState> {
     return FirebaseErrorMapper.getMessage(e);
   }
 
-  // ── Watch Patient Queue ────────────────────────────────────────────────────
+  // ── Watch Patient Queue ────────────────--------------------------------────
   void watchPatientQueue(String patientId) {
-    emit(QueuePatientLoading());
+    emit(QueuePatientLoading(
+      queueEntry: state.queueEntry,
+      patientsAhead: state.patientsAhead,
+    ));
     _queueSubscription?.cancel();
 
     _queueSubscription = watchPatientQueueEntryUseCase(patientId: patientId)
@@ -46,7 +49,11 @@ class QueuePatientCubit extends Cubit<QueuePatientState> {
             }
           },
           onError: (e) {
-            emit(QueuePatientError(_mapExceptionToMessage(e)));
+            emit(QueuePatientError(
+              _mapExceptionToMessage(e),
+              queueEntry: state.queueEntry,
+              patientsAhead: state.patientsAhead,
+            ));
           },
         );
   }
@@ -57,5 +64,3 @@ class QueuePatientCubit extends Cubit<QueuePatientState> {
     return super.close();
   }
 }
-
-

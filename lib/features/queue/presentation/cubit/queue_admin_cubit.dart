@@ -36,9 +36,14 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
     return FirebaseErrorMapper.getMessage(e);
   }
 
-  // ── Fetch Queue ────────────────────────────────────────────────────────────
+  // ── Fetch Queue ────────────────────────────────----------------────────────
   void fetchQueue({required String department}) {
-    emit(QueueAdminLoading());
+    emit(QueueAdminLoading(
+      queueEntries: state.queueEntries,
+      totalToday: state.totalToday,
+      called: state.called,
+      served: state.served,
+    ));
     _queueSubscription?.cancel();
 
     try {
@@ -58,15 +63,27 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
           ));
         },
         onError: (e) {
-          emit(QueueAdminError(_mapExceptionToMessage(e)));
+          emit(QueueAdminError(
+            _mapExceptionToMessage(e),
+            queueEntries: state.queueEntries,
+            totalToday: state.totalToday,
+            called: state.called,
+            served: state.served,
+          ));
         },
       );
     } catch (e) {
-      emit(QueueAdminError(_mapExceptionToMessage(e)));
+      emit(QueueAdminError(
+        _mapExceptionToMessage(e),
+        queueEntries: state.queueEntries,
+        totalToday: state.totalToday,
+        called: state.called,
+        served: state.served,
+      ));
     }
   }
 
-  // ── Check In Patient ───────────────────────────────────────────────────────
+  // ── Check In Patient ────────────────--------------------------------───────
   Future<void> checkInPatient({
     required String appointmentId,
     required String department,
@@ -76,19 +93,54 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
         appointmentId: appointmentId,
         department: department,
       );
-      emit(QueueAdminActionSuccess('Patient checked in successfully'));
-      // No need to call fetchQueue; the stream auto-updates.
+      // ── Notify Admins ────────────────--------------------------------──
+      await sendNotificationUseCase(
+        NotificationEntity(
+          id: '',
+          userId: 'ADMINS',
+          title: 'Patient Checked In',
+          body: 'A patient has checked in for the $department queue.',
+          type: NotificationType.queueCalled,
+          isRead: false,
+          createdAt: DateTime.now(),
+        ),
+      );
+      emit(QueueAdminActionSuccess(
+        'Patient checked in successfully',
+        queueEntries: state.queueEntries,
+        totalToday: state.totalToday,
+        called: state.called,
+        served: state.served,
+      ));
     } catch (e) {
-      emit(QueueAdminError(_mapExceptionToMessage(e)));
+      emit(QueueAdminError(
+        _mapExceptionToMessage(e),
+        queueEntries: state.queueEntries,
+        totalToday: state.totalToday,
+        called: state.called,
+        served: state.served,
+      ));
     }
   }
 
-  // ── Call Next Patient ─────────────────────────────────────────────────────
+  // ── Call Next Patient ────────────────--------------------------------─────
   Future<void> callNextPatient({required String department}) async {
     try {
       final patientId = await callNextPatientUseCase(department: department);
+      
+      if (patientId == null) {
+        emit(QueueAdminError(
+          'Queue is empty or no waiting patients available.',
+          queueEntries: state.queueEntries,
+          totalToday: state.totalToday,
+          called: state.called,
+          served: state.served,
+        ));
+        return;
+      }
+
       // ── Notify the called patient ─────────────────────────────────
-      if (patientId != null && patientId.isNotEmpty) {
+      if (patientId.isNotEmpty) {
         await sendNotificationUseCase(
           NotificationEntity(
             id: '',
@@ -101,24 +153,72 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
           ),
         );
       }
-      emit(QueueAdminActionSuccess('Next patient called'));
-      // No need to call fetchQueue; the stream auto-updates.
+      
+      // ── Notify Admins ──────────────────────────────────────────────────
+      await sendNotificationUseCase(
+        NotificationEntity(
+          id: '',
+          userId: 'ADMINS',
+          title: 'Patient Called',
+          body: 'Next patient called for $department department.',
+          type: NotificationType.queueCalled,
+          isRead: false,
+          createdAt: DateTime.now(),
+        ),
+      );
+      
+      emit(QueueAdminActionSuccess(
+        'Next patient called',
+        queueEntries: state.queueEntries,
+        totalToday: state.totalToday,
+        called: state.called,
+        served: state.served,
+      ));
     } catch (e) {
-      emit(QueueAdminError(_mapExceptionToMessage(e)));
+      emit(QueueAdminError(
+        _mapExceptionToMessage(e),
+        queueEntries: state.queueEntries,
+        totalToday: state.totalToday,
+        called: state.called,
+        served: state.served,
+      ));
     }
   }
 
-  // ── Mark Served ────────────────────────────────────────────────────────────
+  // ── Mark Served ───────────────────────────
   Future<void> markServed({
     required String appointmentId,
     required String department,
   }) async {
     try {
       await markQueueServedUseCase(appointmentId: appointmentId);
-      emit(QueueAdminActionSuccess('Patient marked as served'));
-      // No need to call fetchQueue; the stream auto-updates.
+      // ── Notify Admins ──────────────────────────────────────────────────
+      await sendNotificationUseCase(
+        NotificationEntity(
+          id: '',
+          userId: 'ADMINS',
+          title: 'Patient Served',
+          body: 'A patient has been marked as served in $department.',
+          type: NotificationType.queueCalled,
+          isRead: false,
+          createdAt: DateTime.now(),
+        ),
+      );
+      emit(QueueAdminActionSuccess(
+        'Patient marked as served',
+        queueEntries: state.queueEntries,
+        totalToday: state.totalToday,
+        called: state.called,
+        served: state.served,
+      ));
     } catch (e) {
-      emit(QueueAdminError(_mapExceptionToMessage(e)));
+      emit(QueueAdminError(
+        _mapExceptionToMessage(e),
+        queueEntries: state.queueEntries,
+        totalToday: state.totalToday,
+        called: state.called,
+        served: state.served,
+      ));
     }
   }
 
@@ -129,10 +229,33 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
   }) async {
     try {
       await markQueueNoShowUseCase(appointmentId: appointmentId);
-      emit(QueueAdminActionSuccess('Patient marked as no-show'));
-      // No need to call fetchQueue; the stream auto-updates.
+      // ── Notify Admins ──────────────────────────────────────────────────
+      await sendNotificationUseCase(
+        NotificationEntity(
+          id: '',
+          userId: 'ADMINS',
+          title: 'Patient No-Show',
+          body: 'A patient was marked as no-show in $department.',
+          type: NotificationType.queueCalled,
+          isRead: false,
+          createdAt: DateTime.now(),
+        ),
+      );
+      emit(QueueAdminActionSuccess(
+        'Patient marked as no-show',
+        queueEntries: state.queueEntries,
+        totalToday: state.totalToday,
+        called: state.called,
+        served: state.served,
+      ));
     } catch (e) {
-      emit(QueueAdminError(_mapExceptionToMessage(e)));
+      emit(QueueAdminError(
+        _mapExceptionToMessage(e),
+        queueEntries: state.queueEntries,
+        totalToday: state.totalToday,
+        called: state.called,
+        served: state.served,
+      ));
     }
   }
 
@@ -142,5 +265,3 @@ class QueueAdminCubit extends Cubit<QueueAdminState> {
     return super.close();
   }
 }
-
-

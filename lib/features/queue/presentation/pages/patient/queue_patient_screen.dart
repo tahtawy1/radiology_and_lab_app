@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:radiology_and_lab_app/core/constants/app_strings.dart';
+import 'package:radiology_and_lab_app/core/services/user_session_service.dart';
 
 import 'package:radiology_and_lab_app/features/appointment/domain/entites/appointment_entity.dart';
 import '../../cubit/queue_patient_cubit.dart';
@@ -33,10 +35,19 @@ class _QueuePatientViewState extends State<QueuePatientView> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => context.pop(),
-        ),
+        automaticallyImplyLeading: false,
+        leading: context.canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go(AppStrings.dashboardRoute, extra: UserSessionService.currentUser);
+                  }
+                },
+              )
+            : null,
         title: const Text(
           'Queue Status',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),

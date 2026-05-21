@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/constants/app_strings.dart';
+import 'package:radiology_and_lab_app/core/services/user_session_service.dart';
 import '../../cubit/results_cubit.dart';
 import '../../cubit/results_state.dart';
 import '../../widgets/admin/served_patient_card.dart';
@@ -30,6 +31,19 @@ class _ServedPatientsResultsScreenState
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        automaticallyImplyLeading: false,
+        leading: context.canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go(AppStrings.dashboardRoute, extra: UserSessionService.currentUser);
+                  }
+                },
+              )
+            : null,
         title: const Text(
           'Served Patients',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),

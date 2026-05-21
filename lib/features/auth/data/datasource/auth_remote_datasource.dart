@@ -160,6 +160,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           .collection('users')
           .doc(userCredential.user!.uid)
           .set(userModel.toJson());
+          UserSessionService.currentUser = userModel;
+
 
       return userModel;
     } on FirebaseAuthException catch (e) {

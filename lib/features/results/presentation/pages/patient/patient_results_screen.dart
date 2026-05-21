@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
+import 'package:radiology_and_lab_app/core/constants/app_strings.dart';
+import 'package:radiology_and_lab_app/core/services/user_session_service.dart';
 import 'package:radiology_and_lab_app/core/services/result_file_handler_service.dart';
 import 'package:radiology_and_lab_app/features/results/domain/entites/result_entity.dart';
 import 'package:radiology_and_lab_app/features/results/presentation/cubit/results_cubit.dart';
@@ -46,10 +48,16 @@ class _PatientResultsScreenState extends State<PatientResultsScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
-        leading: widget.showBackButton
+        leading: (widget.showBackButton || context.canPop())
             ? IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () => context.pop(),
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go(AppStrings.dashboardRoute, extra: UserSessionService.currentUser);
+                  }
+                },
               )
             : null,
         title: const Text(

@@ -246,7 +246,7 @@ class _DoctorScaffold extends StatelessWidget {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ADMIN SHELL
-// Spec: Home | Queue | Results | Reports | Profile (5 tabs)
+// Spec: Home | Queue | Results | Notifications | Profile (5 tabs)
 // FAB: Center-docked "Upload Result" button.
 // ─────────────────────────────────────────────────────────────────────────────
 class _AdminShell extends StatelessWidget {
@@ -293,6 +293,11 @@ class _AdminScaffold extends StatelessWidget {
       label: 'Results',
     ),
     _TabItem(
+      icon: Icons.notifications_outlined,
+      activeIcon: Icons.notifications,
+      label: 'Notifications',
+    ),
+    _TabItem(
       icon: Icons.person_outline,
       activeIcon: Icons.person,
       label: 'Profile',
@@ -315,6 +320,10 @@ class _AdminScaffold extends StatelessWidget {
           BlocProvider<ResultsCubit>.value(
             value: context.read<ResultsCubit>(),
             child: const ServedPatientsResultsScreen(),
+          ),
+          BlocProvider<NotificationsCubit>.value(
+            value: context.read<NotificationsCubit>(),
+            child: const NotificationsScreen(),
           ),
           _ProfileTab(user: user),
         ];

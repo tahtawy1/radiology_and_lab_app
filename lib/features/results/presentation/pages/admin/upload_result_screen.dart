@@ -4,6 +4,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:radiology_and_lab_app/core/constants/app_strings.dart';
+import 'package:radiology_and_lab_app/core/services/user_session_service.dart';
 
 import 'package:radiology_and_lab_app/features/results/presentation/cubit/results_cubit.dart';
 import 'package:radiology_and_lab_app/features/results/presentation/cubit/results_state.dart';
@@ -93,10 +95,19 @@ class _UploadResultScreenState extends State<UploadResultScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          onPressed: () => context.pop(),
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-        ),
+        automaticallyImplyLeading: false,
+        leading: context.canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go(AppStrings.dashboardRoute, extra: UserSessionService.currentUser);
+                  }
+                },
+              )
+            : null,
         title: const Text(
           'Upload Test Result',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),

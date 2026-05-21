@@ -13,6 +13,10 @@ abstract class AppointmentRemoteDataSource {
     String doctorId,
   );
 
+  Stream<List<AppointmentModel>> getAppointmentsForDoctor(
+    String doctorId,
+  );
+
   Stream<List<AppointmentModel>> getAllAppointments();
 
   Future<void> cancelAppointment(String appointmentId);
@@ -128,6 +132,23 @@ class AppointmentRemoteDataSourceImpl implements AppointmentRemoteDataSource {
       throw const ServerException(
         'Failed to fetch pending appointments for doctor',
       );
+    }
+  }
+
+  @override
+  Stream<List<AppointmentModel>> getAppointmentsForDoctor(String doctorId) {
+    try {
+      return firestore
+          .collection('appointments')
+          .where('doctorId', isEqualTo: doctorId)
+          .snapshots()
+          .map((snapshot) => snapshot.docs
+              .map((doc) => AppointmentModel.fromMap(doc.data()))
+              .toList());
+    } on FirebaseException catch (e) {
+      throw ServerException(FirebaseErrorMapper.getMessage(e));
+    } catch (e) {
+      throw const ServerException('Failed to fetch doctor appointments');
     }
   }
 

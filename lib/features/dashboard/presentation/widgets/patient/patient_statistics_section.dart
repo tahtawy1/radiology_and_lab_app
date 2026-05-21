@@ -22,23 +22,21 @@ class PatientStatisticsSection extends StatelessWidget {
         int completed = 0;
         int upcoming = 0;
 
-        if (state is AppointmentsLoaded) {
-          final all = state.appointments;
-          total = all.length;
-          pending =
-              all.where((a) => a.status == AppointmentStatus.pending).length;
-          completed =
-              all.where((a) => a.status == AppointmentStatus.confirmed).length;
-          upcoming =
-              all
-                  .where(
-                    (a) =>
-                        (a.status == AppointmentStatus.pending ||
-                            a.status == AppointmentStatus.confirmed) &&
-                        !a.appointmentDateTime.isBefore(DateTime.now()),
-                  )
-                  .length;
-        }
+        final all = state.appointments;
+        total = all.length;
+        pending =
+            all.where((a) => a.status == AppointmentStatus.pending).length;
+        completed =
+            all.where((a) => a.status == AppointmentStatus.confirmed).length;
+        upcoming =
+            all
+                .where(
+                  (a) =>
+                      (a.status == AppointmentStatus.pending ||
+                          a.status == AppointmentStatus.confirmed) &&
+                      !a.appointmentDateTime.isBefore(DateTime.now()),
+                )
+                .length;
 
         return Column(
           children: [

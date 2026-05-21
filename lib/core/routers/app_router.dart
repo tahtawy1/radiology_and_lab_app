@@ -31,6 +31,8 @@ import 'package:radiology_and_lab_app/features/results/domain/entites/result_ent
 import 'package:radiology_and_lab_app/features/results/presentation/pages/doctor/doctor_pending_reviews_screen.dart';
 import 'package:radiology_and_lab_app/features/notifications/presentation/pages/notifications_screen.dart';
 import 'package:radiology_and_lab_app/features/notifications/presentation/cubit/notifications_cubit.dart';
+import 'package:radiology_and_lab_app/core/services/user_session_service.dart';
+
 
 AuthCubit _buildAuthCubit() => AuthCubit(
   signInUseCase: getIt<SignInUseCase>(),
@@ -236,8 +238,15 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
         final showBackButton = extra?['showBackButton'] as bool? ?? false;
+        final user = UserSessionService.currentUser;
         return BlocProvider<NotificationsCubit>(
-          create: (context) => getIt<NotificationsCubit>(),
+          create: (context) {
+            final cubit = getIt<NotificationsCubit>();
+            if (user != null) {
+              cubit.listenToNotifications(user.id, user.role.toLowerCase());
+            }
+            return cubit;
+          },
           child: NotificationsScreen(showBackButton: showBackButton),
         );
       },

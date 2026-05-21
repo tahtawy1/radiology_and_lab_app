@@ -19,18 +19,14 @@ class PendingRequestsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AppointmentCubit, AppointmentState>(
       builder: (context, state) {
-        if (state is AppointmentLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
+        final pending = state.pendingDoctorAppointments.take(5).toList();
 
-        if (state is! AppointmentsLoaded || state.appointments.isEmpty) {
+        if (pending.isEmpty) {
           return const EmptyStateWidget(
             message: 'No pending requests',
             icon: Icons.check_circle_outline,
           );
         }
-
-        final pending = state.appointments.take(5).toList();
 
         return Column(
           children: pending.map((appt) => _PendingCard(appt: appt)).toList(),

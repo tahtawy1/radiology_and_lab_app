@@ -23,6 +23,8 @@ abstract class ResultRemoteDataSource {
 
   Stream<List<ResultModel>> getDoctorPendingReviews({required String doctorId});
 
+  Stream<List<ResultModel>> getResultsForDoctor({required String doctorId});
+
   Stream<List<AppointmentModel>> getServedPatients();
 }
 
@@ -179,6 +181,23 @@ class ResultRemoteDataSourceImpl implements ResultRemoteDataSource {
       throw e is AppException
           ? e
           : const ServerException('Failed to fetch pending reviews');
+    }
+  }
+
+  @override
+  Stream<List<ResultModel>> getResultsForDoctor({required String doctorId}) {
+    try {
+      return _firestore
+          .collection('results')
+          .where('doctorId', isEqualTo: doctorId)
+          .snapshots()
+          .map((snapshot) => snapshot.docs.map((e) => ResultModel.fromMap(e.data())).toList());
+    } on FirebaseException catch (e) {
+      throw ServerException(FirebaseErrorMapper.getMessage(e));
+    } catch (e) {
+      throw e is AppException
+          ? e
+          : const ServerException('Failed to fetch doctor results');
     }
   }
 

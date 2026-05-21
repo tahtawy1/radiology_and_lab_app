@@ -123,10 +123,19 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => context.pop(),
-        ),
+        automaticallyImplyLeading: false,
+        leading: context.canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go(AppStrings.dashboardRoute, extra: UserSessionService.currentUser);
+                  }
+                },
+              )
+            : null,
         title: const Text(
           'Book Appointment',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
@@ -139,7 +148,11 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
               context,
               'Appointment booked — pending doctor approval',
             );
-            context.pushReplacement(AppStrings.myAppointmentsRoute);
+            context.push(
+              AppStrings.myAppointmentsRoute,
+              extra: {'showBackButton': true},
+            );
+            
           } else if (state is AppointmentError) {
             AppSnackBar.showError(context, state.message);
           } else if (state is DoctorsLoaded) {

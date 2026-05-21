@@ -1,7 +1,5 @@
 import 'dart:async';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../../../../core/errors/firebase_error_mapper.dart';
 import '../../domain/usecases/get_user_notifications_usecase.dart';
 import '../../domain/usecases/mark_notification_as_read_usecase.dart';
@@ -25,7 +23,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
 
   // ── Start real-time stream ─────────────────────────────────────────────────
   void listenToNotifications(String userId, String role) {
-    emit(NotificationsLoading());
+    emit(NotificationsLoading(notifications: state.notifications));
 
     // Cancel any previous subscription before opening a new one
     _subscription?.cancel();
@@ -35,7 +33,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
         emit(NotificationsLoaded(notifications: notifications));
       },
       onError: (e) {
-        emit(NotificationsError(_mapError(e)));
+        emit(NotificationsError(_mapError(e), notifications: state.notifications));
       },
     );
   }
@@ -46,7 +44,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
       await _markNotificationAsReadUseCase(notificationId);
       // No separate emit needed — the Firestore stream will push the updated list.
     } catch (e) {
-      emit(NotificationsError(_mapError(e)));
+      emit(NotificationsError(_mapError(e), notifications: state.notifications));
     }
   }
 

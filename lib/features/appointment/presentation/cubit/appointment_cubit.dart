@@ -11,6 +11,7 @@ import 'package:radiology_and_lab_app/features/appointment/domain/usecases/get_a
 import 'package:radiology_and_lab_app/features/appointment/domain/usecases/get_doctors_usecase.dart';
 import 'package:radiology_and_lab_app/features/appointment/domain/usecases/get_patient_appointments_usecase.dart';
 import 'package:radiology_and_lab_app/features/appointment/domain/usecases/get_pending_appointments_for_doctor_usecase.dart';
+import 'package:radiology_and_lab_app/features/appointment/domain/usecases/get_appointments_for_doctor_usecase.dart';
 import 'package:radiology_and_lab_app/features/appointment/domain/usecases/update_appointment_status_usecase.dart';
 import 'package:radiology_and_lab_app/features/appointment/domain/usecases/update_queue_status_usecase.dart';
 import '../../../../core/errors/firebase_error_mapper.dart';
@@ -26,12 +27,13 @@ class AppointmentCubit extends Cubit<AppointmentState> {
   final UpdateAppointmentStatusUseCase updateAppointmentStatusUseCase;
   final UpdateQueueStatusUseCase updateQueueStatusUseCase;
   final GetDoctorsUseCase getDoctorsUseCase;
-  final GetPendingAppointmentsForDoctorUseCase
-  getPendingAppointmentsForDoctorUseCase;
+  final GetPendingAppointmentsForDoctorUseCase getPendingAppointmentsForDoctorUseCase;
+  final GetAppointmentsForDoctorUseCase getAppointmentsForDoctorUseCase;
   final SendNotificationUseCase sendNotificationUseCase;
 
   StreamSubscription? _patientAppointmentsSubscription;
   StreamSubscription? _pendingAppointmentsSubscription;
+  StreamSubscription? _doctorAppointmentsSubscription;
   StreamSubscription? _allAppointmentsSubscription;
 
   AppointmentCubit({
@@ -43,6 +45,7 @@ class AppointmentCubit extends Cubit<AppointmentState> {
     required this.updateQueueStatusUseCase,
     required this.getDoctorsUseCase,
     required this.getPendingAppointmentsForDoctorUseCase,
+    required this.getAppointmentsForDoctorUseCase,
     required this.sendNotificationUseCase,
   }) : super(AppointmentInitial());
 
@@ -53,7 +56,12 @@ class AppointmentCubit extends Cubit<AppointmentState> {
 
   // ── Book Appointment ───────────────────────────────────────────────────────
   Future<void> bookAppointment(AppointmentEntity appointment) async {
-    emit(AppointmentLoading());
+    emit(AppointmentLoading(
+      appointments: state.appointments,
+      pendingDoctorAppointments: state.pendingDoctorAppointments,
+      allAppointments: state.allAppointments,
+      doctors: state.doctors,
+    ));
     try {
       await bookAppointmentUseCase(appointment);
       // ── Notify doctor ──────────────────────────────────────────────────
@@ -70,47 +78,155 @@ class AppointmentCubit extends Cubit<AppointmentState> {
           ),
         );
       }
-      emit(AppointmentBookedSuccess());
+      // ── Notify Admins ──────────────────────────────────────────────────
+      await sendNotificationUseCase(
+        NotificationEntity(
+          id: '',
+          userId: 'ADMINS',
+          title: 'New Appointment Request',
+          body: 'A new patient appointment request has been created.',
+          type: NotificationType.newAppointmentRequest,
+          isRead: false,
+          createdAt: DateTime.now(),
+        ),
+      );
+      emit(AppointmentBookedSuccess(
+        appointments: state.appointments,
+        pendingDoctorAppointments: state.pendingDoctorAppointments,
+        allAppointments: state.allAppointments,
+        doctors: state.doctors,
+      ));
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToMessage(e)));
+      emit(AppointmentError(
+        _mapExceptionToMessage(e),
+        appointments: state.appointments,
+        pendingDoctorAppointments: state.pendingDoctorAppointments,
+        allAppointments: state.allAppointments,
+        doctors: state.doctors,
+      ));
     }
   }
 
   // ── Get Patient Appointments ───────────────────────────────────────────────
   void getPatientAppointments(String patientId) {
-    emit(AppointmentLoading());
+    emit(AppointmentLoading(
+      appointments: state.appointments,
+      pendingDoctorAppointments: state.pendingDoctorAppointments,
+      allAppointments: state.allAppointments,
+      doctors: state.doctors,
+    ));
     _patientAppointmentsSubscription?.cancel();
     
     try {
       _patientAppointmentsSubscription = getPatientAppointmentsUseCase(patientId).listen(
         (appointments) {
-          emit(AppointmentsLoaded(appointments: appointments));
+          emit(AppointmentsLoaded(
+            appointments: appointments,
+            pendingDoctorAppointments: state.pendingDoctorAppointments,
+            allAppointments: state.allAppointments,
+            doctors: state.doctors,
+          ));
         },
         onError: (e) {
-          emit(AppointmentError(_mapExceptionToMessage(e)));
+          emit(AppointmentError(
+            _mapExceptionToMessage(e),
+            appointments: state.appointments,
+            pendingDoctorAppointments: state.pendingDoctorAppointments,
+            allAppointments: state.allAppointments,
+            doctors: state.doctors,
+          ));
         },
       );
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToMessage(e)));
+      emit(AppointmentError(
+        _mapExceptionToMessage(e),
+        appointments: state.appointments,
+        pendingDoctorAppointments: state.pendingDoctorAppointments,
+        allAppointments: state.allAppointments,
+        doctors: state.doctors,
+      ));
     }
   }
 
   // ── Get Pending Appointments for Doctor ────────────────────────────────────
   void getPendingAppointmentsForDoctor(String doctorId) {
-    emit(AppointmentLoading());
+    emit(AppointmentLoading(
+      appointments: state.appointments,
+      pendingDoctorAppointments: state.pendingDoctorAppointments,
+      allAppointments: state.allAppointments,
+      doctors: state.doctors,
+    ));
     _pendingAppointmentsSubscription?.cancel();
 
     try {
       _pendingAppointmentsSubscription = getPendingAppointmentsForDoctorUseCase(doctorId).listen(
         (appointments) {
-          emit(AppointmentsLoaded(appointments: appointments));
+          emit(AppointmentsLoaded(
+            appointments: state.appointments,
+            pendingDoctorAppointments: appointments,
+            allAppointments: state.allAppointments,
+            doctors: state.doctors,
+          ));
         },
         onError: (e) {
-          emit(AppointmentError(_mapExceptionToMessage(e)));
+          emit(AppointmentError(
+            _mapExceptionToMessage(e),
+            appointments: state.appointments,
+            pendingDoctorAppointments: state.pendingDoctorAppointments,
+            allAppointments: state.allAppointments,
+            doctors: state.doctors,
+          ));
         },
       );
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToMessage(e)));
+      emit(AppointmentError(
+        _mapExceptionToMessage(e),
+        appointments: state.appointments,
+        pendingDoctorAppointments: state.pendingDoctorAppointments,
+        allAppointments: state.allAppointments,
+        doctors: state.doctors,
+      ));
+    }
+  }
+
+  // ── Get All Doctor Appointments ────────────────────────────────────────────
+  void getAppointmentsForDoctor(String doctorId) {
+    emit(AppointmentLoading(
+      appointments: state.appointments,
+      pendingDoctorAppointments: state.pendingDoctorAppointments,
+      allAppointments: state.allAppointments,
+      doctors: state.doctors,
+    ));
+    _doctorAppointmentsSubscription?.cancel();
+
+    try {
+      _doctorAppointmentsSubscription = getAppointmentsForDoctorUseCase(doctorId).listen(
+        (appointments) {
+          emit(AppointmentsLoaded(
+            appointments: appointments,
+            pendingDoctorAppointments: state.pendingDoctorAppointments,
+            allAppointments: state.allAppointments,
+            doctors: state.doctors,
+          ));
+        },
+        onError: (e) {
+          emit(AppointmentError(
+            _mapExceptionToMessage(e),
+            appointments: state.appointments,
+            pendingDoctorAppointments: state.pendingDoctorAppointments,
+            allAppointments: state.allAppointments,
+            doctors: state.doctors,
+          ));
+        },
+      );
+    } catch (e) {
+      emit(AppointmentError(
+        _mapExceptionToMessage(e),
+        appointments: state.appointments,
+        pendingDoctorAppointments: state.pendingDoctorAppointments,
+        allAppointments: state.allAppointments,
+        doctors: state.doctors,
+      ));
     }
   }
 
@@ -119,14 +235,14 @@ class AppointmentCubit extends Cubit<AppointmentState> {
     String appointmentId, {
     required String patientId,
   }) async {
-    List<AppointmentEntity>? currentList;
-    if (state is AppointmentsLoaded) {
-      currentList = (state as AppointmentsLoaded).appointments;
-      final optimisticList = currentList.where((a) => a.id != appointmentId).toList();
-      emit(AppointmentsLoaded(appointments: optimisticList));
-    } else {
-      emit(AppointmentLoading());
-    }
+    final originalPending = state.pendingDoctorAppointments;
+    final optimisticList = originalPending.where((a) => a.id != appointmentId).toList();
+    emit(AppointmentsLoaded(
+      appointments: state.appointments,
+      pendingDoctorAppointments: optimisticList,
+      allAppointments: state.allAppointments,
+      doctors: state.doctors,
+    ));
 
     try {
       await updateAppointmentStatusUseCase(
@@ -145,17 +261,26 @@ class AppointmentCubit extends Cubit<AppointmentState> {
           createdAt: DateTime.now(),
         ),
       );
-      emit(AppointmentStatusUpdatedSuccess());
-      
-      if (currentList != null) {
-        final optimisticList = currentList.where((a) => a.id != appointmentId).toList();
-        emit(AppointmentsLoaded(appointments: optimisticList));
-      }
+      emit(AppointmentStatusUpdatedSuccess(
+        appointments: state.appointments,
+        pendingDoctorAppointments: optimisticList,
+        allAppointments: state.allAppointments,
+        doctors: state.doctors,
+      ));
     } catch (e) {
-      if (currentList != null) {
-        emit(AppointmentsLoaded(appointments: currentList));
-      }
-      emit(AppointmentError(_mapExceptionToMessage(e)));
+      emit(AppointmentsLoaded(
+        appointments: state.appointments,
+        pendingDoctorAppointments: originalPending,
+        allAppointments: state.allAppointments,
+        doctors: state.doctors,
+      ));
+      emit(AppointmentError(
+        _mapExceptionToMessage(e),
+        appointments: state.appointments,
+        pendingDoctorAppointments: originalPending,
+        allAppointments: state.allAppointments,
+        doctors: state.doctors,
+      ));
     }
   }
 
@@ -164,14 +289,14 @@ class AppointmentCubit extends Cubit<AppointmentState> {
     String appointmentId, {
     required String patientId,
   }) async {
-    List<AppointmentEntity>? currentList;
-    if (state is AppointmentsLoaded) {
-      currentList = (state as AppointmentsLoaded).appointments;
-      final optimisticList = currentList.where((a) => a.id != appointmentId).toList();
-      emit(AppointmentsLoaded(appointments: optimisticList));
-    } else {
-      emit(AppointmentLoading());
-    }
+    final originalPending = state.pendingDoctorAppointments;
+    final optimisticList = originalPending.where((a) => a.id != appointmentId).toList();
+    emit(AppointmentsLoaded(
+      appointments: state.appointments,
+      pendingDoctorAppointments: optimisticList,
+      allAppointments: state.allAppointments,
+      doctors: state.doctors,
+    ));
 
     try {
       await updateAppointmentStatusUseCase(
@@ -190,47 +315,94 @@ class AppointmentCubit extends Cubit<AppointmentState> {
           createdAt: DateTime.now(),
         ),
       );
-      emit(AppointmentStatusUpdatedSuccess());
-      
-      if (currentList != null) {
-        final optimisticList = currentList.where((a) => a.id != appointmentId).toList();
-        emit(AppointmentsLoaded(appointments: optimisticList));
-      }
+      emit(AppointmentStatusUpdatedSuccess(
+        appointments: state.appointments,
+        pendingDoctorAppointments: optimisticList,
+        allAppointments: state.allAppointments,
+        doctors: state.doctors,
+      ));
     } catch (e) {
-      if (currentList != null) {
-        emit(AppointmentsLoaded(appointments: currentList));
-      }
-      emit(AppointmentError(_mapExceptionToMessage(e)));
+      emit(AppointmentsLoaded(
+        appointments: state.appointments,
+        pendingDoctorAppointments: originalPending,
+        allAppointments: state.allAppointments,
+        doctors: state.doctors,
+      ));
+      emit(AppointmentError(
+        _mapExceptionToMessage(e),
+        appointments: state.appointments,
+        pendingDoctorAppointments: originalPending,
+        allAppointments: state.allAppointments,
+        doctors: state.doctors,
+      ));
     }
   }
 
   // ── Get All Appointments (Admin use) ───────────────────────────────────────
   void getAllAppointments() {
-    emit(AppointmentLoading());
+    emit(AppointmentLoading(
+      appointments: state.appointments,
+      pendingDoctorAppointments: state.pendingDoctorAppointments,
+      allAppointments: state.allAppointments,
+      doctors: state.doctors,
+    ));
     _allAppointmentsSubscription?.cancel();
     
     try {
       _allAppointmentsSubscription = getAllAppointmentsUseCase().listen(
         (appointments) {
-          emit(AppointmentsLoaded(appointments: appointments));
+          emit(AppointmentsLoaded(
+            appointments: state.appointments,
+            pendingDoctorAppointments: state.pendingDoctorAppointments,
+            allAppointments: appointments,
+            doctors: state.doctors,
+          ));
         },
         onError: (e) {
-          emit(AppointmentError(_mapExceptionToMessage(e)));
+          emit(AppointmentError(
+            _mapExceptionToMessage(e),
+            appointments: state.appointments,
+            pendingDoctorAppointments: state.pendingDoctorAppointments,
+            allAppointments: state.allAppointments,
+            doctors: state.doctors,
+          ));
         },
       );
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToMessage(e)));
+      emit(AppointmentError(
+        _mapExceptionToMessage(e),
+        appointments: state.appointments,
+        pendingDoctorAppointments: state.pendingDoctorAppointments,
+        allAppointments: state.allAppointments,
+        doctors: state.doctors,
+      ));
     }
   }
 
   // ── Cancel Appointment ─────────────────────────────────────────────────────
   Future<void> cancelAppointment(String appointmentId) async {
-    emit(AppointmentLoading());
+    emit(AppointmentLoading(
+      appointments: state.appointments,
+      pendingDoctorAppointments: state.pendingDoctorAppointments,
+      allAppointments: state.allAppointments,
+      doctors: state.doctors,
+    ));
     try {
       await cancelAppointmentUseCase(appointmentId);
-      emit(AppointmentCancelledSuccess());
+      emit(AppointmentCancelledSuccess(
+        appointments: state.appointments,
+        pendingDoctorAppointments: state.pendingDoctorAppointments,
+        allAppointments: state.allAppointments,
+        doctors: state.doctors,
+      ));
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToMessage(e)));
+      emit(AppointmentError(
+        _mapExceptionToMessage(e),
+        appointments: state.appointments,
+        pendingDoctorAppointments: state.pendingDoctorAppointments,
+        allAppointments: state.allAppointments,
+        doctors: state.doctors,
+      ));
     }
   }
 
@@ -239,26 +411,58 @@ class AppointmentCubit extends Cubit<AppointmentState> {
     required String appointmentId,
     required AppointmentStatus status,
   }) async {
-    emit(AppointmentLoading());
+    emit(AppointmentLoading(
+      appointments: state.appointments,
+      pendingDoctorAppointments: state.pendingDoctorAppointments,
+      allAppointments: state.allAppointments,
+      doctors: state.doctors,
+    ));
     try {
       await updateAppointmentStatusUseCase(
         appointmentId: appointmentId,
         status: status,
       );
-      emit(AppointmentStatusUpdatedSuccess());
+      emit(AppointmentStatusUpdatedSuccess(
+        appointments: state.appointments,
+        pendingDoctorAppointments: state.pendingDoctorAppointments,
+        allAppointments: state.allAppointments,
+        doctors: state.doctors,
+      ));
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToMessage(e)));
+      emit(AppointmentError(
+        _mapExceptionToMessage(e),
+        appointments: state.appointments,
+        pendingDoctorAppointments: state.pendingDoctorAppointments,
+        allAppointments: state.allAppointments,
+        doctors: state.doctors,
+      ));
     }
   }
 
   // ── Get Doctors ────────────────────────────────────────────────────────────
   Future<void> getDoctors() async {
-    emit(AppointmentLoading());
+    emit(AppointmentLoading(
+      appointments: state.appointments,
+      pendingDoctorAppointments: state.pendingDoctorAppointments,
+      allAppointments: state.allAppointments,
+      doctors: state.doctors,
+    ));
     try {
       final doctors = await getDoctorsUseCase();
-      emit(DoctorsLoaded(doctors));
+      emit(DoctorsLoaded(
+        doctors,
+        appointments: state.appointments,
+        pendingDoctorAppointments: state.pendingDoctorAppointments,
+        allAppointments: state.allAppointments,
+      ));
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToMessage(e)));
+      emit(AppointmentError(
+        _mapExceptionToMessage(e),
+        appointments: state.appointments,
+        pendingDoctorAppointments: state.pendingDoctorAppointments,
+        allAppointments: state.allAppointments,
+        doctors: state.doctors,
+      ));
     }
   }
 
@@ -267,17 +471,31 @@ class AppointmentCubit extends Cubit<AppointmentState> {
     required String appointmentId,
     required QueueStatus status,
   }) async {
-    emit(AppointmentLoading());
+    emit(AppointmentLoading(
+      appointments: state.appointments,
+      pendingDoctorAppointments: state.pendingDoctorAppointments,
+      allAppointments: state.allAppointments,
+      doctors: state.doctors,
+    ));
     try {
       await updateQueueStatusUseCase(
         appointmentId: appointmentId,
         status: status,
       );
-      emit(
-        AppointmentStatusUpdatedSuccess(),
-      ); // Reuse same success state for simplicity
+      emit(AppointmentStatusUpdatedSuccess(
+        appointments: state.appointments,
+        pendingDoctorAppointments: state.pendingDoctorAppointments,
+        allAppointments: state.allAppointments,
+        doctors: state.doctors,
+      ));
     } catch (e) {
-      emit(AppointmentError(_mapExceptionToMessage(e)));
+      emit(AppointmentError(
+        _mapExceptionToMessage(e),
+        appointments: state.appointments,
+        pendingDoctorAppointments: state.pendingDoctorAppointments,
+        allAppointments: state.allAppointments,
+        doctors: state.doctors,
+      ));
     }
   }
 
@@ -285,6 +503,7 @@ class AppointmentCubit extends Cubit<AppointmentState> {
   Future<void> close() {
     _patientAppointmentsSubscription?.cancel();
     _pendingAppointmentsSubscription?.cancel();
+    _doctorAppointmentsSubscription?.cancel();
     _allAppointmentsSubscription?.cancel();
     return super.close();
   }

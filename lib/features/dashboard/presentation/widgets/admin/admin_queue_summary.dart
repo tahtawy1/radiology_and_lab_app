@@ -14,16 +14,12 @@ class AdminQueueSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<QueueAdminCubit, QueueAdminState>(
       builder: (context, state) {
-        final isLoaded = state is QueueAdminLoaded;
-        final totalToday = isLoaded ? state.totalToday : 0;
-        final waiting =
-            isLoaded
-                ? state.queueEntries
-                    .where((e) => e.queueStatus?.name == 'waiting')
-                    .length
-                : 0;
-        final called = isLoaded ? state.called : 0;
-        final served = isLoaded ? state.served : 0;
+        final totalToday = state.totalToday;
+        final waiting = state.queueEntries
+            .where((e) => e.queueStatus?.name == 'waiting')
+            .length;
+        final called = state.called;
+        final served = state.served;
 
         return Column(
           children: [

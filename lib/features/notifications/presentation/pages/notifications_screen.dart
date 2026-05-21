@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:go_router/go_router.dart';
+import 'package:radiology_and_lab_app/core/constants/app_strings.dart';
+import 'package:radiology_and_lab_app/core/services/user_session_service.dart';
 
 import '../../../../shared/widgets/app_snackbar.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
@@ -42,14 +45,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         elevation: 0,
         automaticallyImplyLeading: false,
         leading:
-            widget.showBackButton
+            (widget.showBackButton || context.canPop())
                 ? IconButton(
                   icon: const Icon(
                     Icons.arrow_back_ios_new,
                     color: Color(0xFF475569),
                     size: 20,
                   ),
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go(AppStrings.dashboardRoute, extra: UserSessionService.currentUser);
+                    }
+                  },
                 )
                 : null,
         title: const Text(

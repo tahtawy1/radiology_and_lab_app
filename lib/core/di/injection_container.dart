@@ -17,6 +17,7 @@ import '../../features/appointment/domain/usecases/update_appointment_status_use
 import '../../features/appointment/domain/usecases/update_queue_status_usecase.dart';
 import '../../features/appointment/domain/usecases/get_doctors_usecase.dart';
 import '../../features/appointment/domain/usecases/get_pending_appointments_for_doctor_usecase.dart';
+import '../../features/appointment/domain/usecases/get_appointments_for_doctor_usecase.dart';
 import '../../features/appointment/presentation/cubit/appointment_cubit.dart';
 
 // Queue Feature
@@ -51,6 +52,7 @@ import '../../features/results/domain/usecases/upload_result_usecase.dart';
 import '../../features/results/domain/usecases/review_result_usecase.dart';
 import '../../features/results/domain/usecases/get_patient_results_usecase.dart';
 import '../../features/results/domain/usecases/get_doctor_pending_reviews_usecase.dart';
+import '../../features/results/domain/usecases/get_doctor_results_usecase.dart';
 import '../../features/results/domain/usecases/get_served_patients_usecase.dart';
 import '../../features/results/presentation/cubit/results_cubit.dart';
 import 'package:dio/dio.dart';
@@ -124,6 +126,7 @@ Future<void> initGetIt() async {
   getIt.registerLazySingleton(() => ReviewResultUseCase(getIt()));
   getIt.registerLazySingleton(() => GetPatientResultsUseCase(getIt()));
   getIt.registerLazySingleton(() => GetDoctorPendingReviewsUseCase(getIt()));
+  getIt.registerLazySingleton(() => GetDoctorResultsUseCase(repository: getIt()));
   getIt.registerLazySingleton(() => GetServedPatientsUseCase(getIt()));
 
   // Cubits
@@ -133,6 +136,7 @@ Future<void> initGetIt() async {
       reviewResultUseCase: getIt(),
       getPatientResultsUseCase: getIt(),
       getDoctorPendingReviewsUseCase: getIt(),
+      getDoctorResultsUseCase: getIt(),
       getServedPatientsUseCase: getIt(),
       cloudinaryService: getIt(),
       sendNotificationUseCase: getIt(),
@@ -181,6 +185,9 @@ Future<void> initGetIt() async {
   getIt.registerLazySingleton(
     () => GetPendingAppointmentsForDoctorUseCase(repository: getIt()),
   );
+  getIt.registerLazySingleton(
+    () => GetAppointmentsForDoctorUseCase(repository: getIt()),
+  );
 
   // Cubits
   getIt.registerFactory(
@@ -193,6 +200,7 @@ Future<void> initGetIt() async {
       updateQueueStatusUseCase: getIt(),
       getDoctorsUseCase: getIt(),
       getPendingAppointmentsForDoctorUseCase: getIt(),
+      getAppointmentsForDoctorUseCase: getIt(),
       sendNotificationUseCase: getIt(),
     ),
   );

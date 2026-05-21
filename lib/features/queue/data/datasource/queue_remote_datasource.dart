@@ -162,35 +162,62 @@ class QueueRemoteDataSourceImpl implements QueueRemoteDataSource {
   @override
   Future<String?> callNextPatient({required String department}) async {
     try {
-      final snapshot =
-          await firestore
-              .collection('appointments')
-              .where('department', isEqualTo: department)
-              .where(
-                'appointmentDateTime',
-                isGreaterThanOrEqualTo: Timestamp.fromDate(_startOfToday()),
-              )
-              .where(
-                'appointmentDateTime',
-                isLessThan: Timestamp.fromDate(_endOfToday()),
-              )
-              .where('queueStatus', isEqualTo: 'waiting')
-              .orderBy('queueNumber')
-              .limit(1)
-              .get();
+      // 1. Fast check if someone is already called
+      final calledSnapshot = await firestore
+          .collection('appointments')
+          .where('department', isEqualTo: department)
+          .where('appointmentDateTime', isGreaterThanOrEqualTo: Timestamp.fromDate(_startOfToday()))
+          .where('appointmentDateTime', isLessThan: Timestamp.fromDate(_endOfToday()))
+          .where('queueStatus', isEqualTo: 'called')
+          .limit(1)
+          .get();
 
-      if (snapshot.docs.isNotEmpty) {
-        final doc = snapshot.docs.first;
-        final docId = doc.id;
-        final patientId = doc.data()['patientId'] as String?;
-        await firestore.collection('appointments').doc(docId).update({
+      if (calledSnapshot.docs.isNotEmpty) {
+        throw const ServerException('A patient is already called. Please mark them as served or no-show first.');
+      }
+
+      // 2. Query for the next waiting patient
+      final waitingSnapshot = await firestore
+          .collection('appointments')
+          .where('department', isEqualTo: department)
+          .where('appointmentDateTime', isGreaterThanOrEqualTo: Timestamp.fromDate(_startOfToday()))
+          .where('appointmentDateTime', isLessThan: Timestamp.fromDate(_endOfToday()))
+          .where('queueStatus', isEqualTo: 'waiting')
+          .orderBy('queueNumber')
+          .limit(1)
+          .get();
+
+      if (waitingSnapshot.docs.isEmpty) {
+        return null;
+      }
+
+      final docRef = waitingSnapshot.docs.first.reference;
+
+      // 3. Safely update inside a transaction to prevent race conditions
+      return await firestore.runTransaction((transaction) async {
+        final docSnapshot = await transaction.get(docRef);
+        
+        if (!docSnapshot.exists) {
+          throw const ServerException('Patient record not found.');
+        }
+        
+        final data = docSnapshot.data() as Map<String, dynamic>;
+        
+        // Ensure another admin didn't already call this patient or change status
+        if (data['queueStatus'] != 'waiting') {
+          throw const ServerException('Queue state changed. Please try again.');
+        }
+        
+        transaction.update(docRef, {
           'queueStatus': 'called',
           'calledAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         });
-        return patientId;
-      }
-      return null;
+        
+        return data['patientId'] as String?;
+      });
+    } on ServerException {
+      rethrow;
     } on FirebaseException catch (e) {
       throw ServerException(FirebaseErrorMapper.getMessage(e));
     } catch (e) {

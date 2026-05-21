@@ -16,7 +16,6 @@ class LiveQueueCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<QueuePatientCubit, QueuePatientState>(
       builder: (context, state) {
-        if (state is! QueuePatientLoaded) return const SizedBox.shrink();
         final entry = state.queueEntry;
 
         // Enforce business rule: hide if no physical check-in yet

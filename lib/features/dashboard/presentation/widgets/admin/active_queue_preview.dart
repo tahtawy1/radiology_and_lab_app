@@ -14,17 +14,6 @@ class ActiveQueuePreview extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<QueueAdminCubit, QueueAdminState>(
       builder: (context, state) {
-        if (state is QueueAdminLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (state is! QueueAdminLoaded) {
-          return const EmptyStateWidget(
-            message: 'No active queue entries',
-            icon: Icons.queue_outlined,
-          );
-        }
-
         final active = state.queueEntries
             .where((e) =>
                 e.queueStatus?.name == 'waiting' || e.queueStatus?.name == 'called')

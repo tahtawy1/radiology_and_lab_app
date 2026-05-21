@@ -24,5 +24,7 @@ abstract class AppointmentRepository {
     required QueueStatus status,
   });
 
+  Stream<List<AppointmentEntity>> getAppointmentsForDoctor(String doctorId);
+
   Future<List<Map<String, String>>> getDoctors();
 }

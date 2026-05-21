@@ -5,6 +5,8 @@ import 'package:radiology_and_lab_app/core/constants/app_colors.dart';
 import 'package:radiology_and_lab_app/core/constants/app_strings.dart';
 import 'package:radiology_and_lab_app/features/notifications/presentation/cubit/notifications_cubit.dart';
 import 'package:radiology_and_lab_app/features/notifications/presentation/cubit/notifications_state.dart';
+import 'package:radiology_and_lab_app/features/dashboard/presentation/cubit/navigation_cubit.dart';
+
 
 /// Teal gradient header used at the top of every role dashboard.
 /// Uses the same gradient as the app's splash/auth screens (AppColors).
@@ -94,7 +96,13 @@ class DashboardHeader extends StatelessWidget {
           const SizedBox(width: 12),
           // ── Notification Bell ──────────────────────────────────────────────────
           GestureDetector(
-            onTap: () => context.push(AppStrings.notificationsRoute, extra: {'showBackButton': true}),
+            onTap: () {
+              try {
+                context.read<NavigationCubit>().goToTab(3);
+              } catch (_) {
+                context.push(AppStrings.notificationsRoute, extra: {'showBackButton': true});
+              }
+            },
             child: BlocBuilder<NotificationsCubit, NotificationsState>(
               builder: (context, state) {
                 int unreadCount = 0;

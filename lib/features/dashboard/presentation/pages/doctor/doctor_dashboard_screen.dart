@@ -6,6 +6,7 @@ import 'package:radiology_and_lab_app/core/constants/app_colors.dart';
 import 'package:radiology_and_lab_app/core/constants/app_strings.dart';
 import 'package:radiology_and_lab_app/features/auth/domain/entities/user_entity.dart';
 import 'package:radiology_and_lab_app/features/appointment/presentation/cubit/appointment_cubit.dart';
+import 'package:radiology_and_lab_app/features/results/presentation/cubit/results_cubit.dart';
 
 import '../../widgets/shared/dashboard_header.dart';
 import '../../widgets/shared/dashboard_section_title.dart';
@@ -30,6 +31,12 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
 
   void _loadData() {
     context.read<AppointmentCubit>().getPendingAppointmentsForDoctor(
+      widget.user.id,
+    );
+    context.read<AppointmentCubit>().getAppointmentsForDoctor(
+      widget.user.id,
+    );
+    context.read<ResultsCubit>().getDoctorResults(
       widget.user.id,
     );
   }

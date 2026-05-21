@@ -19,7 +19,7 @@ class UpcomingAppointmentCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AppointmentCubit, AppointmentState>(
       builder: (context, state) {
-        if (state is! AppointmentsLoaded) return const SizedBox.shrink();
+        if (state.appointments.isEmpty) return const SizedBox.shrink();
 
         final upcoming =
             state.appointments

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:radiology_and_lab_app/core/constants/app_strings.dart';
+import 'package:radiology_and_lab_app/core/services/user_session_service.dart';
 
 import '../../../../../shared/widgets/app_snackbar.dart';
 import 'package:radiology_and_lab_app/features/appointment/domain/entites/appointment_entity.dart';
@@ -38,14 +40,20 @@ class _QueueAdminViewState extends State<QueueAdminView> {
         elevation: 0,
         automaticallyImplyLeading: false,
         leading:
-            widget.showBackButton
+            (widget.showBackButton || context.canPop())
                 ? IconButton(
                   icon: const Icon(
                     Icons.arrow_back_ios,
                     color: Colors.black,
                     size: 20,
                   ),
-                  onPressed: () => context.pop(),
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go(AppStrings.dashboardRoute, extra: UserSessionService.currentUser);
+                    }
+                  },
                 )
                 : null,
         title: const Text(
@@ -58,6 +66,10 @@ class _QueueAdminViewState extends State<QueueAdminView> {
         ),
       ),
       body: BlocConsumer<QueueAdminCubit, QueueAdminState>(
+        listenWhen: (previous, current) =>
+            current is QueueAdminError || current is QueueAdminActionSuccess,
+        buildWhen: (previous, current) =>
+            current is! QueueAdminActionSuccess && current is! QueueAdminError,
         listener: (context, state) {
           if (state is QueueAdminError) {
             AppSnackBar.showError(context, state.message);
@@ -71,6 +83,21 @@ class _QueueAdminViewState extends State<QueueAdminView> {
           }
 
           if (state is QueueAdminLoaded) {
+            final pendingCheckIn =
+                state.queueEntries
+                    .where(
+                      (e) =>
+                          e.status.name == 'confirmed' && e.queueStatus == null,
+                    )
+                    .toList();
+
+            final activeQueue =
+                state.queueEntries.where((e) => e.queueStatus != null).toList();
+
+            if (pendingCheckIn.isEmpty && activeQueue.isEmpty) {
+              return _buildEmptyQueueState();
+            }
+
             return RefreshIndicator(
               onRefresh:
                   () async => context.read<QueueAdminCubit>().fetchQueue(
@@ -122,7 +149,7 @@ class _QueueAdminViewState extends State<QueueAdminView> {
             );
           }
 
-          return const Center(child: Text('No Data'));
+          return _buildEmptyQueueState();
         },
       ),
     );
@@ -427,6 +454,53 @@ class _QueueAdminViewState extends State<QueueAdminView> {
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyQueueState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F766E).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.check_circle_outline,
+                size: 80,
+                color: Color(0xFF0F766E),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            const Text(
+              'Queue is Empty',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            Text(
+              'No patients are currently waiting in the queue.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.grey.shade600,
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
